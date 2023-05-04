@@ -1,7 +1,7 @@
 function f =  forceMBB(x,y,ind)
-L = 50;
+L = 30;
 d = 0.04*L;
-h = 0.32*L;
+h = 10;
     switch ind
         case 1
             f = zeros(2, size(x,1), size(x,2));

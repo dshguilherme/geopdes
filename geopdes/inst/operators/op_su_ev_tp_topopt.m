@@ -32,7 +32,7 @@
 %    You should have received a copy of the GNU General Public License
 %    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function varargout = op_su_ev_tp_topopt (space1, space2, msh, lambda, mu, density)
+function varargout = op_su_ev_tp_topopt (space1, space2, msh, lambda, mu, density, E, Emin)
 
   for icomp = 1:space1.ncomp_param
     for idim = 1:msh.ndim
@@ -58,7 +58,7 @@ function varargout = op_su_ev_tp_topopt (space1, space2, msh, lambda, mu, densit
     end
     elements = msh_col.elem_list;
     c = density(elements);
-    A = A + op_su_ev_topopt (sp1_col, sp2_col, msh_col, lambda (x{:}), mu (x{:}), c);
+    A = A + op_su_ev_topopt (sp1_col, sp2_col, msh_col, lambda (x{:}), mu (x{:}), c, E, Emin);
   end
 
   if (nargout == 1)

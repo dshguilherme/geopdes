@@ -44,7 +44,7 @@ drchlt_dofs = unique(drchlt_dofs(:));
 u_drchlt = zeros(numel(drchlt_dofs),1); % For this case, homogeneous BCs.
 u = zeros(sp.ndof,1);
 u(drchlt_dofs) = u_drchlt;
-free_dofs = setdiff(1:sp.ndof, [drchlt_dofs; symm_dofs]);
+free_dofs = setdiff(1:sp.ndof, [drchlt_dofs;]);
 F(free_dofs) = F(free_dofs) -K(free_dofs, drchlt_dofs)*u_drchlt;
 u(free_dofs) = K(free_dofs, free_dofs)\F(free_dofs);
 

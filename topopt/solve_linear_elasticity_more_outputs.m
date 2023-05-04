@@ -98,7 +98,7 @@ sp = sp_vector (scalar_spaces, msh);
 clear space_scalar scalar_spaces
 
 % Assemble the matrices
-mat    = op_su_ev_tp_topopt (sp, sp, msh, lambda_lame, mu_lame, density); 
+mat    = op_su_ev_tp_topopt (sp, sp, msh, lambda_lame, mu_lame, density, E, Emin); 
 rhs    = op_f_v_tp (sp, msh, f);
 
 % Apply Neumann boundary conditions
