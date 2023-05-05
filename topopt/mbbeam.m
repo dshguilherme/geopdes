@@ -1,7 +1,7 @@
 % EX_PLANE_STRAIN_SQUARE: solve the plane-strain problem on a square.
 
 % 1) PHYSICAL DATA OF THE PROBLEM
-clear problem_data
+clearvars
 % Physical domain, defined as NURBS map given in a text file
 L = 30;
 hh = 10;
@@ -10,7 +10,7 @@ d = 0.04*L;
 problem_data.geo_name = nrb4surf([0 0], [L 0], [0 hh], [L hh]);
 
 % Type of boundary conditions
-problem_data.nmnn_sides   = [1];
+problem_data.nmnn_sides   = [4];
 problem_data.press_sides  = [];
 problem_data.drchlt_sides = [];
 % problem_data.drchlt_components = {[ 2]};
@@ -32,20 +32,22 @@ problem_data.h = @(x, y, ind) zeros (2, size (x, 1), size (x, 2));
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
-method_data.degree     = [3 1];     % Degree of the bsplines
-method_data.regularity = [2 0];     % Regularity of the splines
+method_data.degree     = [3 3];     % Degree of the bsplines
+method_data.regularity = [2 2];     % Regularity of the splines
 method_data.nsub       = [120 10];     % Number of subdivisions
-method_data.nquad      = [4 2];     % Points for the Gaussian quadrature rule
+method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 
+
+% Build Spaces
+[geometry, msh, sp] = buildSpaces(problem_data,method_data);
 
 % 3) Initialize TopOpt parameters
 vol_frac = 0.5;
-x = vol_frac*ones(prod(method_data.nsub),1);
+n = msh.nel_dir;
+x = vol_frac*ones(prod(n),1);
 density = x;
-n = method_data.nsub;
 xx = linspace(0,L,n(1));
 yy = linspace(0,hh,n(2));
-
 
 % Density filtering parameters
 rmin = 3;
@@ -53,7 +55,36 @@ rmin = 3;
 h = max(0,rmin-sqrt(dx.^2+dy.^2));
 Hs = conv2(ones(method_data.nsub),h,'same');
 
+% Pre-calculate element volume, stiffness and dofs
+Ke = zeros(msh.nel,sp.nsh_max,sp.nsh_max);
+lm = zeros(msh.nel,sp.nsh_max);
+for i=1:msh.nel
+    [k, dofs] = elementaryStiffness(i, sp, sp, msh, problem_data.lambda_lame, problem_data.mu_lame);
+    Ke(i,:,:) = k;
+    lm(i,:) = dofs;
+end
 
+tmp_msh = msh_precompute(msh);
+Ve = (tmp_msh.element_size.^2)';
+%% Boundary Conditions
+% Force
+F = buildForce(sp,msh,problem_data);
+
+% Dirichlet and Symmetry
+symm_dofs = findSymm(sp,msh,problem_data);
+
+y_dofs = sp.comp_dofs{2}; % Index of y dofs
+by_dofs = sp.boundary(2).dofs; % dofs of side 2 of the boundary
+
+dx_dof = L./sp.ndof_dir;
+n_drch_dof = ceil(d./dx_dof);
+
+drchlt_dofs = intersect(y_dofs, by_dofs);
+drchlt_dofs = drchlt_dofs(n_drch_dof(2)); 
+
+free_dofs = setdiff(1:sp.ndof, [drchlt_dofs; symm_dofs]);
+
+u_drchlt = zeros(numel(drchlt_dofs),1); % For this case, homogeneous BCs.
 
 %% TopOpt Initial Conditions
 loop = 0;
@@ -63,73 +94,57 @@ xold2 = x;
 low = ones(size(x));
 upp = ones(size(x));
 while change > 0.01
-    % 3) CALL TO THE SOLVER
-    loop = loop+1;
-    [geometry, msh, space, ~, K, F, symm_dofs] = solve_linear_elasticity_more_outputs (problem_data, method_data, density);
+loop = loop+1;
+% Pre-alocating vectors/solutions
+u = zeros(sp.ndof,1);
+K = zeros(sp.ndof);
+% Build stiffness
+for e=1:msh.nel
+    k_e = (Emin +(x(e)^3)*(E - Emin))*squeeze(Ke(e,:,:));
+    idx = lm(e,:)';
+    K(idx,idx) = K(idx,idx) + k_e;
+end
+% Solving
 
-    sp = space;
+u(drchlt_dofs) = u_drchlt;
+F(free_dofs) = F(free_dofs) -K(free_dofs, drchlt_dofs)*u_drchlt;
+u(free_dofs) = K(free_dofs, free_dofs)\F(free_dofs);
 
-    % Boundary Conditions
-    y_dofs = sp.comp_dofs{2}; % Index of y dofs
-    by_dofs = sp.boundary(2).dofs; % dofs of side 2 of the boundary
 
-    dx_dof = L./sp.ndof_dir;
-    n_drch_dof = ceil(d./dx_dof);
+compliance = F'*u;
+dc = zeros(msh.nel,1);
+for e=1:msh.nel
+    dofs = lm(e,:)';
+    k_e = squeeze(Ke(e,:,:));
+    dc(e) = -3*(x(e)^2)*(E-Emin)* (u(dofs)')*k_e*u(dofs);
+end
+v_xe = x.*Ve;
+Re = dc./Ve;
 
-    drchlt_dofs = intersect(y_dofs, by_dofs);
-    drchlt_dofs = drchlt_dofs(n_drch_dof(2)); 
+xPhys = reshape(density,n);
+% Density filter
+dc_xy = reshape(dc,n);
+dc = conv2(dc_xy./Hs,h,'same');
+dv = reshape(Ve,n);
+dv = conv2(dv./Hs,h,'same');
 
-    u_drchlt = zeros(numel(drchlt_dofs),1); % For this case, homogeneous BCs.
-
-    u = zeros(sp.ndof,1);
-    u(drchlt_dofs) = u_drchlt;
-    free_dofs = setdiff(1:sp.ndof, [drchlt_dofs; symm_dofs]);
-    F(free_dofs) = F(free_dofs) -K(free_dofs, drchlt_dofs)*u_drchlt;
-    u(free_dofs) = K(free_dofs, free_dofs)\F(free_dofs);
-
-    compliance = F'*u;
-    [c_e, dc, d2c, Ve, v_xe, Re] = mbbCompliance(density, u, sp, msh, problem_data.lambda_lame, ...
-        problem_data.mu_lame, E, Emin);
-    n = method_data.nsub;
-    xPhys = reshape(density,n);
-    % Density filter
-    dc_xy = reshape(dc,n);
-    dc = conv2(dc_xy./Hs,h,'same');
-    dv = reshape(Ve,n);
-    dv = conv2(dv./Hs,h,'same');
-
-    % Calc Lagrange Multiplier and update x
-    ell1 = 0; ell2 = 1e9; move = 0.2;
-    while(ell2-ell1)/(ell1+ell2) > 1e-3
-        mid = 0.5*(ell2+ell1);
-        xnew = max(0,max(x-move,min(1,min(x+move,x.*sqrt(-dc(:)./dv(:)/mid)))));
-        xPhys = conv2(reshape(xnew,n),h,'same')./Hs;
-        if sum(xPhys(:)) > vol_frac*length(x)
-            ell1 = mid;
-        else
-            ell2 = mid;
-        end
+% Calc Lagrange Multiplier and update x
+ell1 = 0; ell2 = 1e9; move = 0.2;
+while(ell2-ell1)/(ell1+ell2) > 1e-3
+    mid = 0.5*(ell2+ell1);
+    xnew = max(0,max(x-move,min(1,min(x+move,x.*sqrt(-dc(:)./dv(:)/mid)))));
+    xPhys = conv2(reshape(xnew,n),h,'same')./Hs;
+    if sum(xPhys(:)) > vol_frac*length(x)
+        ell1 = mid;
+    else
+        ell2 = mid;
     end
-    change = max(abs(xnew(:)-x(:)));
-    density = xnew(:);
-    x = xnew(:);
-    
-    
-    % Check if Volume restriction is respected
-%     V = sum(Ve);
-%     V_ = V*vol_frac;
-%     restriction = sum(v_xe./V_) -1;
-%     
-%     
-
-
-%     [x_new, low, upp] = updateMMA(x, xold1, xold2, loop, compliance, restriction, dc, d2c, dv, vol_frac, low, upp); 
-%     density = x_new;
-%     xold2 = xold1;
-%     xold1 = x;
-%     change = max(abs(xnew(:)-x(:)));
-    fprintf(' Iteration.:%5i | Compliance.:%11.2f | Vol.:%7.3f | Change.:%7.3f\n', ...
-        loop, compliance, mean(xnew(:)),change);
+end
+change = max(abs(xnew(:)-x(:)));
+density = xnew(:);
+x = xnew(:);
+fprintf(' Iteration.:%5i | Compliance.:%11.2f | Vol.:%7.3f | Change.:%7.3f\n', ...
+    loop, compliance, mean(xnew(:)),change);
 colormap(gray); imagesc(xx,yy,1-rot90(xPhys)); caxis([0 1]); axis equal; axis off; drawnow;
 
 end

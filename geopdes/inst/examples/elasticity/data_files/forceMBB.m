@@ -1,6 +1,6 @@
 function f =  forceMBB(x,y,ind)
 L = 30;
-d = 0.04*L;
+d = 0.05*L;
 h = 10;
     switch ind
         case 1
