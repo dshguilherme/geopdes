@@ -25,8 +25,10 @@ problem_data.lambda_lame = @(x, y) ((nu*E)/((1+nu)*(1-2*nu)) * ones (size (x)));
 problem_data.mu_lame = @(x, y) (E/(2*(1+nu)) * ones (size (x)));
 
 % Source and boundary terms
-problem_data.f = @(x, y) zeros (2, size (x, 1), size (x, 2));
-problem_data.g = @forceMBB;
+problem_data.f = @forceMBBDistributed;
+% problem_data.f = @(x, y) zeros (2, size (x, 1), size (x, 2));
+% problem_data.g = @forceMBB;
+problem_data.g = @(x, y, ind) zeros (2, size (x, 1), size (x, 2));
 problem_data.h = @(x, y, ind) zeros (2, size (x, 1), size (x, 2));
 
 
@@ -34,7 +36,7 @@ problem_data.h = @(x, y, ind) zeros (2, size (x, 1), size (x, 2));
 clear method_data
 method_data.degree     = [3 3];     % Degree of the bsplines
 method_data.regularity = [2 2];     % Regularity of the splines
-method_data.nsub       = [120 10];     % Number of subdivisions
+method_data.nsub       = [30 10];     % Number of subdivisions
 method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
 
 
@@ -50,7 +52,7 @@ xx = linspace(0,L,n(1));
 yy = linspace(0,hh,n(2));
 
 % Density filtering parameters
-rmin = 3;
+rmin = 2;
 [dy, dx] = meshgrid(-ceil(rmin)+1:ceil(rmin)-1, -ceil(rmin)+1:ceil(rmin)-1);
 h = max(0,rmin-sqrt(dx.^2+dy.^2));
 Hs = conv2(ones(method_data.nsub),h,'same');
@@ -69,6 +71,7 @@ Ve = (tmp_msh.element_size.^2)';
 %% Boundary Conditions
 % Force
 F = buildForce(sp,msh,problem_data);
+F = F/sum(F);
 
 % Dirichlet and Symmetry
 symm_dofs = findSymm(sp,msh,problem_data);
