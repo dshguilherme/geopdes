@@ -77,13 +77,21 @@ F = F/sum(F);
 symm_dofs = findSymm(sp,msh,problem_data);
 
 y_dofs = sp.comp_dofs{2}; % Index of y dofs
-by_dofs = sp.boundary(2).dofs; % dofs of side 2 of the boundary
+b2y_dofs = sp.boundary(2).dofs; % dofs of side 2 of the boundary
+b3y_dofs = sp.boundary(3).dofs; % dofs of side 3 of the boundary
 
-dx_dof = L./sp.ndof_dir;
-n_drch_dof = ceil(d./dx_dof);
+dx_dof = L/msh.nel_dir(1);
+dy_dof = hh/msh.nel_dir(2);
 
-drchlt_dofs = intersect(y_dofs, by_dofs);
-drchlt_dofs = drchlt_dofs(n_drch_dof(2)); 
+n_drch_x = ceil(d/dx_dof);
+n_drch_y = ceil(d/dy_dof);
+
+
+
+drchlt_dofs2 = intersect(y_dofs, b2y_dofs);
+drchlt_dofs3 = intersect(y_dofs, b3y_dofs);
+
+drchlt_dofs = unique([drchlt_dofs2(1:n_drch_y); drchlt_dofs3(end+1-n_drch_x:end)]);
 
 free_dofs = setdiff(1:sp.ndof, [drchlt_dofs; symm_dofs]);
 
