@@ -34,11 +34,11 @@ problem_data.h = @(x, y, ind) zeros (2, size (x, 1), size (x, 2));
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
-method_data.degree     = [3 3];     % Degree of the bsplines
-method_data.regularity = [2 2];     % Regularity of the splines
+method_data.degree     = [1 1];     % Degree of the bsplines
+method_data.regularity = [0 0];     % Regularity of the splines
 method_data.nsub       = [30 10];     % Number of subdivisions
-method_data.nquad      = [4 4];     % Points for the Gaussian quadrature rule
-
+method_data.nquad      = [2 2];     % Points for the Gaussian quadrature rule
+rmin = 2;
 
 % Build Spaces
 [geometry, msh, sp] = buildSpaces(problem_data,method_data);
@@ -52,7 +52,7 @@ xx = linspace(0,L,n(1));
 yy = linspace(0,hh,n(2));
 
 % Density filtering parameters
-rmin = 2;
+
 [dy, dx] = meshgrid(-ceil(rmin)+1:ceil(rmin)-1, -ceil(rmin)+1:ceil(rmin)-1);
 h = max(0,rmin-sqrt(dx.^2+dy.^2));
 Hs = conv2(ones(method_data.nsub),h,'same');
@@ -68,6 +68,7 @@ end
 
 tmp_msh = msh_precompute(msh);
 Ve = (tmp_msh.element_size.^2)';
+clear tmp_msh
 %% Boundary Conditions
 % Force
 F = buildForce(sp,msh,problem_data);
