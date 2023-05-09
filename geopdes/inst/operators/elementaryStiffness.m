@@ -9,8 +9,9 @@ function [Ke, dofs] = elementaryStiffness(element, sp1, sp2, msh, lambda, mu)
       x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
 Ke = op_su_ev (sp1_col, sp2_col, msh_col, lambda (x{:}), mu (x{:}));
-nel_dof = sqrt(nnz(Ke));
+nel_dof = sp1.nsh_max;
+idx = sp1_col.connectivity;
 
-Ke = reshape(nonzeros(Ke), nel_dof, nel_dof);
+Ke = reshape(Ke(idx, idx), nel_dof, nel_dof);
 dofs = sp1_col.connectivity;
 end
