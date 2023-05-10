@@ -2,7 +2,7 @@
 %
 function [xmma,ymma,zmma,lam,xsi,eta,mu,zet,s,low,upp] = ...
 mmasub(m,n,iter,xval,xmin,xmax,xold1,xold2, ...
-f0val,df0dx,df0dx2,fval,dfdx,dfdx2,low,upp,a0,a,c,d)
+f0val,df0dx,df0dx2,fval,dfdx,dfdx2,low,upp,a0,a,c,d);
 %
 %    Written in May 1999 by
 %    Krister Svanberg <krille@math.kth.se>
@@ -21,6 +21,7 @@ f0val,df0dx,df0dx2,fval,dfdx,dfdx2,low,upp,a0,a,c,d)
 %                z >= 0,   y_i >= 0,         i = 1,...,m
 %*** INPUT:
 %
+
 %   m    = The number of general constraints.
 %   n    = The number of variables x_j.
 %  iter  = Current iteration number ( =1 the first time mmasub is called).
@@ -146,7 +147,7 @@ Q = Q * spdiags(xl2,0,n,n);
 %%%dgdx2 = 2*(P*diag(uxinv3) + Q*diag(xlinv3));
 dgdx2 = P*spdiags(uxinv3,0,n,n)+Q*spdiags(xlinv3,0,n,n);
 dgdx2 = 2*dgdx2;
-del = dfdx2' - dgdx2;
+del = dfdx2 - dgdx2;
 delpos = zeros(m,n);
 delpos(find(del > 0)) = del(find(del > 0));
 %%%P = P + delpos*diag(diap);

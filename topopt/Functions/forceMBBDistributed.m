@@ -1,7 +1,7 @@
 function f =  forceMBBDistributed(x,y)
-L = 30;
+L = 60;
 d = 0.05*L;
-h = 10;
+h = 20;
 
 f = zeros(2, size(x,1), size(x,2));
 idxx = find(x<=d);
