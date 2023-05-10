@@ -127,7 +127,7 @@ while change > 0.01
 end
 change = max(abs(xnew(:)-x(:)));
 density = xnew(:);
-x = xnew(:);
+x = xPhys(:);
 fprintf(' Iteration.:%5i | Compliance.:%11.2f | Vol.:%7.3f | Change.:%7.3f\n', ...
     loop, compliance, mean(xnew(:)),change);
 colormap(gray); imagesc(xx,yy,1-rot90(xPhys)); caxis([0 1]); axis equal; axis off; drawnow;
