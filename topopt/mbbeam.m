@@ -3,9 +3,9 @@
 % 1) PHYSICAL DATA OF THE PROBLEM
 clearvars
 % Physical domain, defined as NURBS map given in a text file
-L = 30;
-hh = 10;
-d = 0.04*L;
+L = 60;
+hh = 20;
+d = 0.05*L;
 
 problem_data.geo_name = nrb4surf([0 0], [L 0], [0 hh], [L hh]);
 
@@ -36,7 +36,7 @@ problem_data.h = @(x, y, ind) zeros (2, size (x, 1), size (x, 2));
 clear method_data
 method_data.degree     = [1 1];     % Degree of the bsplines
 method_data.regularity = [0 0];     % Regularity of the splines
-method_data.nsub       = [30 10];     % Number of subdivisions
+method_data.nsub       = [60 20];     % Number of subdivisions
 method_data.nquad      = [2 2];     % Points for the Gaussian quadrature rule
 rmin = 2;
 
@@ -154,7 +154,7 @@ while(ell2-ell1)/(ell1+ell2) > 1e-3
 end
 change = max(abs(xnew(:)-x(:)));
 density = xnew(:);
-x = xnew(:);
+x = xPhys(:);
 fprintf(' Iteration.:%5i | Compliance.:%11.2f | Vol.:%7.3f | Change.:%7.3f\n', ...
     loop, compliance, mean(xnew(:)),change);
 colormap(gray); imagesc(xx,yy,1-rot90(xPhys)); caxis([0 1]); axis equal; axis off; drawnow;
