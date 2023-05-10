@@ -1,8 +1,4 @@
-% EX_PLANE_STRAIN_SQUARE: solve the plane-strain problem on a square.
-
-% 1) PHYSICAL DATA OF THE PROBLEM
-clearvars
-% Physical domain, defined as NURBS map given in a text file
+function mbb_beam(degree, nsub, vol_frac, rmin, method, change_max, max_iter)
 L = 60;
 hh = 20;
 d = 0.05*L;
@@ -34,17 +30,15 @@ problem_data.h = @(x, y, ind) zeros (2, size (x, 1), size (x, 2));
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
-method_data.degree     = [1 1];     % Degree of the bsplines
-method_data.regularity = [0 0];     % Regularity of the splines
-method_data.nsub       = [30 10];     % Number of subdivisions
-method_data.nquad      = [2 2];     % Points for the Gaussian quadrature rule
-rmin = 2;
+method_data.degree     = [degree degree];     % Degree of the bsplines
+method_data.regularity = [degree-1 degree-1];     % Regularity of the splines
+method_data.nsub       = nsub;     % Number of subdivisions
+method_data.nquad      = [degree+1 degree+1];     % Points for the Gaussian quadrature rule
 
 % Build Spaces
 [geometry, msh, sp] = buildSpaces(problem_data,method_data);
 
 % 3) Initialize TopOpt parameters
-vol_frac = 0.5;
 n = msh.nel_dir;
 x = vol_frac*ones(prod(n),1);
 density = x;
@@ -116,7 +110,7 @@ c_MMA = 10000*ones(m,1); %column vector with the constants c_i*y_i
 d = zeros(m,1); %column vector with the constants 0.5*d_i*(y_i)^2
 
 
-while change > 0.01 && loop < 200
+while change > change_max && loop < max_iter
 loop = loop+1;
 % Pre-alocating vectors/solutions
 u = zeros(sp.ndof,1);
@@ -156,27 +150,46 @@ dv = reshape(Ve,n);
 dv = conv2(dv./Hs,h,'same');
 
 % Update x value through Method of Moving Asymptotes
-xval = xPhys(:);
-m = 1;
-%nn = length(xval), iter = loop, xmin, xmax, xold1, xold2
-f0val = compliance;
-df0dx = dc(:);
-df0dx2 = d2c(:);
-fval = sum(xPhys(:))/(vol_frac*nn) -1;
-dfdx = dv(:)'/(vol_frac*nn);
-dfdx2 = zeros(m,nn);
-[xmma,~,~,~,~,~,~,~,~,low,upp] = mmasub(m, nn, loop, xval, xmin, xmax, ...
-    xold1, xold2, f0val, df0dx, df0dx2, fval, dfdx, dfdx2, low, upp, ...
-    a0, a, c_MMA, d);
-xPhys = conv2(reshape(xmma,n),h,'same')./Hs;
-density = xmma(:);
-xold2 = xold1;
-xold1 = xval;
-change = max(abs(xmma(:)-x(:)));
+if strcmp(method,'MMA')
+    xval = xPhys(:);
+    m = 1;
+    %nn = length(xval), iter = loop, xmin, xmax, xold1, xold2
+    f0val = compliance;
+    df0dx = dc(:);
+    df0dx2 = d2c(:);
+    fval = sum(xPhys(:))/(vol_frac*nn) -1;
+    dfdx = dv(:)'/(vol_frac*nn);
+    dfdx2 = zeros(m,nn);
+    [xmma,~,~,~,~,~,~,~,~,low,upp] = mmasub(m, nn, loop, xval, xmin, xmax, ...
+        xold1, xold2, f0val, df0dx, df0dx2, fval, dfdx, dfdx2, low, upp, ...
+        a0, a, c_MMA, d);
+    xPhys = conv2(reshape(xmma,n),h,'same')./Hs;
+    density = xmma(:);
+    xold2 = xold1;
+    xold1 = xval;
+    change = max(abs(xmma(:)-x(:)));
+    volum = (mean(xmma(:)));
+
+elseif strcmp(method,'OC')
+    ell1 = 0; ell2 = 1e9; move = 0.2;
+    while(ell2-ell1)/(ell1+ell2) > 1e-3
+        mid = 0.5*(ell2+ell1);
+        xnew = max(0,max(x-move,min(1,min(x+move,x.*sqrt(-dc(:)./dv(:)/mid)))));
+        xPhys = conv2(reshape(xnew,n),h,'same')./Hs;
+        if sum(xPhys(:)) > vol_frac*length(x)
+            ell1 = mid;
+        else
+            ell2 = mid;
+        end
+    end
+    change = max(abs(xnew(:)-x(:)));
+    volum = mean(xnew(:));
+end
 x = xPhys(:);
 
 fprintf(' Iteration.:%5i | Compliance.:%11.2f | Vol.:%7.3f | Change.:%7.3f\n', ...
-    loop, compliance, mean(xmma(:)),change);
+    loop, compliance, volum,change);
 colormap(gray); imagesc(xx,yy,1-rot90(xPhys)); caxis([0 1]); axis equal; axis off; drawnow;
 
+end
 end
