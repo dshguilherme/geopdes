@@ -1,17 +1,21 @@
 clearvars
 clc
 %%
-degree = 3;
-nsub = [60 20];
+% 1st mode = 370 1st antires = 1110 2nde mode = 1400
+
+degree = 1;
+nsub = [75 25];
 vol_frac = 0.49;
 rmin = 2;
 change_max = 1e-4;
 max_iter = 1000;
-freq = 180;
+freq = 2.5;
 omega = 2*pi*freq;
-kappa = 20; % Penalty of the Static Compliance
+update = 15;
+kappa = 20; % Penalty of the Static Compliance From 1 to 40
 restrictions = [1 2]; % Which restrictions to apply. 1=Vol, 2=Static Compliance, 3=R_db 
 mm = numel(restrictions);
+filters = 2; % 1 for linear density, 2 for heaviside + linear density
 
 %% Material data
 L = 1;
@@ -19,8 +23,8 @@ hh = 0.5;
 V0 = vol_frac*hh*L;
 YOUNG = 210e9;
 RHO = 7860;
-alpha = 1e-4; 
-beta = 1e-8;
+alpha = 0; 
+beta = 0.1/freq;
 c0 = 100;
 
 %%
@@ -109,12 +113,12 @@ low = ones(nn,1); % Vector with the lower asymptotes from the previous iter
 upp = ones(nn,1); % Vector with the upper asymptotes from the previous iter
 a0 = 1; % Constants a_0 in the term a_0*z
 aa = zeros(m,1); % column vector with the constants a_i 
-c_MMA = 10000*ones(m,1); %column vector with the constants c_i*y_i
+c_MMA = 1000*ones(m,1); %column vector with the constants c_i*y_i
 d = zeros(m,1); %column vector with the constants 0.5*d_i*(y_i)^2
 
 
 W0 = 0;
-bebeta = 0.1;
+csi = 0.1; % Initial csi
 
 while change > change_max && loop < max_iter
     loop = loop+1;
@@ -128,26 +132,24 @@ while change > change_max && loop < max_iter
     reset = xFil;
 
 % Calculate volume-preserving physical density using binary search
+if filters == 2
     eta1 = 0; eta2 = 1;
     while abs(eta2-eta1) > 1e-4
         xFil = reset;
         eta = 0.5*(eta1+eta2);
-        idx_lo = find(xFil<=eta);
-        idx_hi = setdiff(1:numel(xFil),idx_lo);
-        x_lo = xFil(idx_lo);
-        x_hi = xFil(idx_hi);
-
-        xFil(idx_lo) = eta*(exp(-bebeta*(1-x_lo/eta)) -(1-x_lo/eta)*exp(-bebeta));
-        xFil(idx_hi) = (1-eta)*(1 -exp(-bebeta*(x_hi -eta)/(1-eta)) ...
-            +(x_hi - eta)*exp(-bebeta)/(1-eta)) +eta;
-
+        
+        xFil = (tanh(csi*eta) +tanh(csi*(xFil-eta)));
+        xFil = xFil/(tanh(csi*eta) +tanh(csi*(1-eta)));
+        
         if sum(density.*Ve -xFil.*Ve ) > 0
             eta2 = eta;
         elseif sum(density.*Ve -xFil.*Ve ) < 0
             eta1 = eta;
         end
     end
+end
 xPhys = xFil(:);
+% xPhys = reset;
 %% Finite-Element Routines
 
 % Pre-alocating vectors/solutions
@@ -201,22 +203,25 @@ W_db = c0 +10*log10(W);
 W_scaled = 100*W_db/W0_db;
 
 f0val = W_scaled;
+% f0val = W_db;
 
 % Restrictions
 
 R = Ep/Ek;
 R_db = 100 +10*log(R);
 
-Cs = us'*K*us;
+Cs = 0.5*us'*K*us;
 if loop == 1
     Cs0 = Cs;
 end
 
-V_ = sum(xPhys.*Ve);
+V_ = sum(x.*Ve);
 
 g1 = 100*(V_/sum(Ve) -vol_frac);
-g2 = 100*(Cs/Cs0) -kappa*Cs0;
+g2 = 100*(Cs/Cs0) -100*kappa;
 g3 = -R_db +100;
+% g1 = V_/sum(Ve) - vol_frac;
+% g2 = Cs - kappa*Cs0;
 
 fval = [g1; g2; g3];
 fval = fval(restrictions);
@@ -229,45 +234,48 @@ lambda_ = Kd\LL;
 
 % Element sensitivities
 dW = zeros(prod(n),1);
-d2W = dW;
 dR = dW;
-d2R = dW;
 dCs = dW;
-d2Cs = dW;
 for e=1:msh.nel
     dofs = lm(e,:)';
     k_e = squeeze(Ke(e,:,:));
     m_e = squeeze(Me(e,:,:));
     
     dk = (3*x(e)^2)*(E*YOUNG -Emin)*k_e;
-    d2k = (6*x(e)^2)*(E*YOUNG -Emin)*k_e
     if x(e) > 0.1
         dm = (rho0*RHO -rhomin)*m_e;
-        d2m = 0;
     elseif x(e) <= 0.1
         dm = 9*(x(e)^8)*(rho0*RHO -rhomin)*m_e;
-        d2m = 9*8*(x(e)^7)*(rho0*RHO -rhomin)*m_e;
     end
     dc = alpha*dm +beta*dk;
-    d2c = alpha*d2m +beta*d2k;
     
     dkd = (dk +1j*dc -omega*omega*dm);
-    d2kd = (d2k +1j*d2c -omega*omega*d2m);
     
     dW(e) = -0.5*omega*real(1j*(u(dofs)')*dkd*u(dofs));
-    d2W(e) = -0.5*omega*real(1j*(u(dofs)')*d2kd*u(dofs));
     
     dR(e) = real((0.25/Ek)*(u(dofs)'*(dk -omega*omega*R*dm)*u(dofs)) + ...
         (lambda_(dofs)')*dkd*u(dofs));
-    d2R(e) = real((0.25/Ek)*(u(dofs)'*(d2k -omega*omega*R*d2m)*u(dofs)) + ...
-        (lambda_(dofs)')*d2kd*u(dofs));
     
     dCs(e) = -real((us(dofs)'*dk*us(dofs)));
-    d2Cs(e) = -real((us(dofs)'*d2k*us(dofs)));
 end
 
-dV = 100*Ve/sum(Ve);
-d2V = 0*Ve;
+dV = Ve;
+
+
+% Heaviside Filter Chain-Rule
+if filters == 2
+    d_rho = csi*(sech(csi*(x-eta).^2));
+    d_rho = d_rho/(tanh(csi*eta) +tanh(csi*(1-eta)));
+
+    dW = dW.*d_rho;
+    dR = dR.*d_rho;
+    dCs = dCs.*d_rho;
+    dV = dV.*d_rho;
+end
+
+% Log transform Chain-Rule
+dW = (10/(log(10)*W))*dW;
+dR = -(10/log(10)*R)*dR;
 
 % Linear filter Chain-Rule
 dW = reshape(dW,n);
@@ -282,41 +290,17 @@ dCs = reshape(dCs,n);
 dCs = conv2(dCs./Hs,h,'same');
 dCs = dCs(:);
 
-d2W = reshape(d2W,n);
-d2W = conv2(d2W./Hs,h,'same');
-d2W = d2W(:);
+dV = reshape(dV,n);
+dV = conv2(dV./Hs,h,'same');
+dV = dV(:);
 
-d2R = reshape(d2R,n);
-d2R = conv2(d2R./Hs,h,'same');
-d2R = d2R(:);
-
-d2Cs = reshape(d2Cs,n);
-d2Cs = conv2(d2Cs./Hs,h,'same');
-d2Cs = d2Cs(:);
-
-% Heaviside Filter Chain-Rule
-d_rho = zeros(prod(n),1);
-d2_rho = d_rho;
-x_lo = x(idx_lo);
-x_hi = x(idx_hi);
-d_rho(idx_lo) = bebeta*exp(-bebeta*(1-x_lo/eta)) +exp(-bebeta);
-d2_rho(idx_lo) = ((bebeta^2)/eta)*exp(-bebeta*(1-x_lo/eta));
-d_rho(idx_hi) = bebeta*exp(-bebeta*(x_hi-eta)/(1-eta)) +exp(-bebeta);
-d2_rho(idx_hi) = (-bebeta^2)/(1-eta)*exp(-bebeta*(x_hi-eta)/(1-eta));
-
-d2W = d2W.*(d_rho.^2) +dW.*d2_rho;
-dW = dW.*d_rho;
-d2R = d2R.*(d_rho.^2) +dR.*d2_rho;
-dR = dR.*d_rho;
-d2Cs = d2Cs.*(d_rho.^2) +dCs.*d2_rho;
-dCs = dCs.*d_rho;
-
-% Log transform Chain-Rule
-dW = (100/W0_db)*10/(log(10)*W)*dW;
-dR = 10/(log(10)*R)*dR;
+% Constants Multiplication
+dW = 100*dW/W0_db;
+dV = (100/sum(Ve))*dV;
+dCs = (50/Cs0)*dCs;
 
 %% Method of Moving Asymptotes
-xval = xPhys(:);
+xval = x(:);
 df0dx = dW;
 df0dx2 = zeros(size(df0dx));
 dfdx = [dV'; dCs'; dR'];
@@ -334,8 +318,8 @@ x_plot = conv2(reshape(xmma,n),h,'same')./Hs;
 fprintf(' Iteration.:%5i | Objective.:%11.2f | Vol.:%7.3f | Change.:%7.3f\n', ...
     loop, f0val, volum,change);
 colormap(gray); imagesc(xx,yy,1-rot90(x_plot)); caxis([0 1]); axis equal; axis off; drawnow;
-if (mod(loop,50) == 1 || change < 0.01) && bebeta < 200
-    bebeta = 2*bebeta;
+if (mod(loop,update) == 1 || change < 0.01) && csi < 128
+    csi = 1.2*csi;
     change = 0.5;
 end
 end
