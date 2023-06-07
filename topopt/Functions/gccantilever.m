@@ -26,7 +26,7 @@ while kktnorm > kkttol && outit < maxoutit
     xval = xval(:);
     % Calculate function values w/o gradients
     [f0valnew, fvalnew, ~, ~] = cantilever1(xmma, msh, sp, Ke, Me, F, Ve, ...
-        lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0);
+        lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0, eta);
     
     % Check if approximation is conservative
     [conserv] = concheck(m, epsimin, f0app, f0valnew, fapp, fvalnew);
@@ -51,7 +51,7 @@ while kktnorm > kkttol && outit < maxoutit
            xval = conv2(xval,h,'same')./Hs;
            xval = xval(:);
            [f0valnew,fvalnew, ~, ~] = cantilever1(xmma, msh, sp, Ke, Me, F, Ve, ...
-               lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0);
+               lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0, eta);
            % Check conservative
            [conserv] = concheck(m, epsimin,f0app,f0valnew,fapp,fvalnew);
         end
