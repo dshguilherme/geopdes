@@ -21,7 +21,6 @@ f0val,df0dx,df0dx2,fval,dfdx,dfdx2,low,upp,a0,a,c,d);
 %                z >= 0,   y_i >= 0,         i = 1,...,m
 %*** INPUT:
 %
-
 %   m    = The number of general constraints.
 %   n    = The number of variables x_j.
 %  iter  = Current iteration number ( =1 the first time mmasub is called).
