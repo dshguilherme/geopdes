@@ -1,7 +1,7 @@
 function [f0val, df0dx, fval, dfdx] = cantilever2(x, msh, sp, Ke, Me, F, ...
     Ve, lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0, h, Hs, eta)
 [f0val, fval, u, uu] = cantilever1(x, msh, sp, Ke, Me, F, Ve, ...
-    lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0);
+    lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0, eta);
 df0dx = zeros(msh.nel,1);
 df1dx = df0dx;
 for e=1:msh.nel

@@ -46,5 +46,5 @@ C = alpha*M +beta*K;
 Kd = K+1i*omega*C-(omega^2)*M;
 u(dr_dofs) = 0;
 u(free_dofs) = Kd(free_dofs,free_dofs)\F(free_dofs);
-W0 = abs(F'*u);
+W0 = real(0.5*omega*omega*(u')*C*u);
 W0 = 100 +10*log10(W0);
