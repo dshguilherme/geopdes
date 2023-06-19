@@ -21,7 +21,7 @@ raa     = 0.01*eeem;
 raa0eps = 0.000001;
 raaeps  = 0.000001*eeem;
 outeriter = 0;
-maxoutit  = 1;
+maxoutit  = 100;
 kkttol  = 0;
 
 [free_dofs, dr_dofs] = grab_cantilever_dofs(sp);
@@ -41,10 +41,14 @@ for e=1:msh.nel
         M(idx,idx) = M(idx,idx) +m_e;
 end
 K = sparse(K); M = sparse(M);
-C = alpha*M +beta*K;
+C = alpha_*M +beta_*K;
 % Solving
 Kd = K+1i*omega*C-(omega^2)*M;
 u(dr_dofs) = 0;
 u(free_dofs) = Kd(free_dofs,free_dofs)\F(free_dofs);
 W0 = real(0.5*omega*omega*(u')*C*u);
 W0 = 100 +10*log10(W0);
+
+[h, Hs] = density_filter(rmin, nsub);
+
+save('cantilever_init.mat');

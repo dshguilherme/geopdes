@@ -1,6 +1,6 @@
 if outeriter < 0.5
     [f0val, df0dx, fval, dfdx] = cantilever2(xval, msh, sp, Ke, Me, F, Ve, ...
-        lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0, h, Hs, eta);
+        lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0, h, Hs, neta);
     innerit = 0;
     outvector1 = [outeriter innerit f0val fval'];
     outvector2 = xval';
@@ -26,7 +26,7 @@ while kktnorm > kkttol && outit < maxoutit
     xval = xval(:);
     % Calculate function values w/o gradients
     [f0valnew, fvalnew, ~, ~] = cantilever1(xmma, msh, sp, Ke, Me, F, Ve, ...
-        lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0, eta);
+        lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0, neta);
     
     % Check if approximation is conservative
     [conserv] = concheck(m, epsimin, f0app, f0valnew, fapp, fvalnew);
@@ -51,7 +51,7 @@ while kktnorm > kkttol && outit < maxoutit
            xval = conv2(xval,h,'same')./Hs;
            xval = xval(:);
            [f0valnew,fvalnew, ~, ~] = cantilever1(xmma, msh, sp, Ke, Me, F, Ve, ...
-               lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0, eta);
+               lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0, neta);
            % Check conservative
            [conserv] = concheck(m, epsimin,f0app,f0valnew,fapp,fvalnew);
         end
@@ -65,7 +65,7 @@ while kktnorm > kkttol && outit < maxoutit
     xval = conv2(xval,h,'same')./Hs;
     xval = xval(:);
     [f0val, df0dx, fval, dfdx] = cantilever2(xval, msh, sp, Ke, Me, F, Ve, ...
-        lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0, h, Hs, eta);
+        lm, YOUNG, RHO, omega, alpha, beta, vol_frac, W0, h, Hs, neta);
     % Calculate the residual vector of the KKT conditions:
     [residu, kktnorm, residumax] = kktcheck(m,n,xmma,ymma,zmma,lam,xsi,eta,mu,zet,s, ...
            xmin,xmax,df0dx,fval,dfdx,a0,a,c,d);
