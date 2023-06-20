@@ -192,9 +192,9 @@ switch objective_function
             dC(e) = -us(dofs)'*dk*us(dofs);
         end
 %         c_const = (Cs0_db*log(10)*Cs)^(-1);
-        c_const = 1/(10*Cs0);
-        w_const = (W0_db*log(10)*W)^(-1);
-        df0dx = 1000*(neta*w_const*dW +(1-neta)*c_const*dC);
+        c_const = 1/(Cs0);
+        w_const = 10*((W0_db*log(10)*W)^(-1));
+        df0dx = 100*(neta*w_const*dW +(1-neta)*c_const*dC);
 end
 
 % Restriction
