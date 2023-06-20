@@ -77,9 +77,10 @@ switch objective_function
         f0val = 100*(W_db/W0_db);
     case "mixed"
         Cs = Fs'*us;
-        Cs_db = 100 +10*log10(Cs);
-        Cs0_db = 100 +10*log10(Cs0);
-        Cs_scaled = 100*Cs_db/Cs0_db;
+%         Cs_db = 100 +10*log10(Cs);
+%         Cs0_db = 100 +10*log10(Cs0);
+%         Cs_scaled = 100*Cs_db/Cs0_db;
+        Cs_scaled = 100*Cs/Cs0;
         
         W = 0.5*omega*omega*real((u')*C*u); % Active input power
         W_db = 100 +10*log10(W);
@@ -190,7 +191,8 @@ switch objective_function
             dW(e) = real(lambda_(dofs)'*dkd*u(dofs));
             dC(e) = -us(dofs)'*dk*us(dofs);
         end
-        c_const = (Cs0_db*log(10)*Cs)^(-1);
+%         c_const = (Cs0_db*log(10)*Cs)^(-1);
+        c_const = 1/(10*Cs0);
         w_const = (W0_db*log(10)*W)^(-1);
         df0dx = 1000*(neta*w_const*dW +(1-neta)*c_const*dC);
 end
