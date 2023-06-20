@@ -77,9 +77,10 @@ switch objective_function
         f0val = 100*(W_db/W0_db);
     case "mixed"
         Cs = Fs'*us;
-        Cs_db = 100 +10*log10(Cs);
-        Cs0_db = 100 +10*log10(Cs0);
-        Cs_scaled = 100*Cs_db/Cs0_db;
+%         Cs_db = 100 +10*log10(Cs);
+%         Cs0_db = 100 +10*log10(Cs0);
+%         Cs_scaled = 100*Cs_db/Cs0_db;
+        Cs_scaled = 100*Cs/Cs0;
         
         W = 0.5*omega*omega*real((u')*C*u); % Active input power
         W_db = 100 +10*log10(W);
