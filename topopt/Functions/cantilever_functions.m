@@ -93,6 +93,14 @@ switch objective_function
     case "W0"
         W = 0.5*omega*omega*real((u')*C*u); % Active input power
         f0val = 100 +10*log10(W); % dB scale    
+    case "History"
+        W = 0.5*omega*omega*real((u')*C*u);
+        W_db = 100 +10*log10(W);
+        W0_db = 100 +10*log10(W0);
+        W_scaled = 100*W_db/W0_db;
+        Cs = Fs'*us;
+        f0val = [W_scaled, 100*Cs/Cs0];
+
 end
 fval = sum(x.*Ve)-vol_frac*sum(Ve); % Volume Constraint
 

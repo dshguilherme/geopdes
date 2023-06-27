@@ -96,6 +96,7 @@ f1 = @cantilever_functions_and_sensitivities;
 f2 = @cantilever_functions;
 
 tmp = objective_function;
+save('init.mat');
 objective_function = "Cs0";
 save('init.mat');
 [Cs0 ~] = f2(xval);
