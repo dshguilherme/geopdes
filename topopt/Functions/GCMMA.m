@@ -1,4 +1,4 @@
-function xval = GCMMA(f1,f2,init_mat, filter_options)
+function [xval, fobj, fres, x_history] = GCMMA(f1,f2,init_mat, filter_options)
     % Initialize
     eval_objective_and_constraints = f1;
     eval_objective = f2;
@@ -8,10 +8,13 @@ function xval = GCMMA(f1,f2,init_mat, filter_options)
     % Initial values for the functions
     [f0val, df0dx, fval, dfdx] = eval_objective_and_constraints(xval);
     change = 1;
+    x_history = zeros(numel(xval),maxoutit);
+    fobj = zeros(maxoutit,1);
+    fres = fobj;
     % Start outer iterations
     kktnorm = kkttol+10;
     outit = 0;
-    while (kktnorm > kkttol) & (outit < maxoutit) %& (change > change_min)
+    while (kktnorm > kkttol) & (outit < maxoutit) & (change > change_min)
         outit = outit+1;
         outeriter = outeriter+1;
     %     Calculate low, upp, raa0 and raa
@@ -66,9 +69,10 @@ function xval = GCMMA(f1,f2,init_mat, filter_options)
                xmin,xmax,df0dx,fval,dfdx,a0,a,c,d);
            
     % Output Stuff
-        x_plot = reshape(xPhys,nsub);
+        x_history(:,outit) = xval; x_plot = reshape(xPhys,nsub); fobj(outit) = f0val; fres(outit) = fval; 
         fprintf(' Iteration: %3i | Objective:%10.4f | Volume: %4.2f | Change:%7.4f\n', ...
       outit, f0val, mean(xPhys), change);
     colormap(gray); imagesc(1-rot90(x_plot)); caxis([0 1]); axis equal;axis off;drawnow;
     end
+    fobj = fobj(1:outit); fres = fres(1:outit); x_history = x_history(:,1:outit);
 end
