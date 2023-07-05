@@ -4,7 +4,7 @@ close all
 
 %% Initialize Parameters
 parameters.degree = 1;
-parameters.nsub = [60 20];
+parameters.nsub = [90 30];
 parameters.vol_frac = 0.49;
 parameters.rmin = 2;
 parameters.change_min = 1e-4;
@@ -28,7 +28,7 @@ parameters.beta_ = 0.1/parameters.omega;
 % AIP - Active Input Power
 % dB AIP - Active Inpute Power in dB scaling
 % mixed - neta*(dB AIP) + (1-neta)*(dB compliance)
-parameters.objective_function = "mixed";
+parameters.objective_function = "scaled compliance";
 parameters.neta = 0.9; % If objective_function = "mixed", neta = the mixing coefficient
 
 parameters.philter = "density"; % "simple" for sensitivity, "density" for density

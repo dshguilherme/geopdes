@@ -7,7 +7,7 @@ clc
 parameters.degree = 1;
 parameters.nsub = [60 20];
 parameters.vol_frac = 0.49;
-parameters.rmin = 2;
+parameters.rmin = 3;
 parameters.change_min = 1e-4;
 parameters.iter_max = 100;
 
@@ -33,13 +33,13 @@ load('init.mat');
 
 %% Optimization Strategy
 % OC
-% xval = OC(f1, 'init.mat', filter_options);
+xval = OC(f1, 'init.mat', filter_options);
 
 % MMA
 % xval = MMA(f1,'init.mat', filter_options);
 
 % GCMMA
-xval = GCMMA(f1,f2,'init.mat', filter_options);
+% xval = GCMMA(f1,f2,'init.mat', filter_options);
 
 
 

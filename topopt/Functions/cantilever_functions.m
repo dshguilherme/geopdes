@@ -22,7 +22,7 @@ if ~strcmp(objective_function,"compliance") % if the objective is AIP or mixed
     end
     Ks = sparse(Ks); M = sparse(M);
     C = alpha_*M +beta_*Ks;
-    Kd = Ks +1j*C -omega*omega*M;
+    Kd = Ks +1j*omega*C -omega*omega*M;
 else % if the objective is compliance
     for e=1:msh.nel
     k_e = (YOUNG_MIN +(x(e)^3)*(YOUNG - YOUNG_MIN))*squeeze(Ke(e,:,:));

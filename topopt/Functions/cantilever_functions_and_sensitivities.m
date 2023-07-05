@@ -22,7 +22,7 @@ if ~strcmp(objective_function,"compliance") % if the objective is AIP or mixed
     end
     Ks = sparse(Ks); M = sparse(M);
     C = alpha_*M +beta_*Ks;
-    Kd = Ks +1j*C -omega*omega*M;
+    Kd = Ks +1j*omega*C -omega*omega*M;
 else % if the objective is compliance
     for e=1:msh.nel
     k_e = (YOUNG_MIN +(x(e)^3)*(YOUNG - YOUNG_MIN))*squeeze(Ke(e,:,:));
@@ -125,8 +125,8 @@ switch objective_function
     df0dx = 1000*constant*df0dx;
     case "AIP"
         % solve adjoint problem
-%         lambda_ = Kd\(-1j*0.5*omega*conj(F));
-        lambda_ = -1j*0.5*omega*u;
+        lambda_ = Kd\(-1j*0.5*omega*conj(F));
+%         lambda_ = -1j*0.5*omega*u;
         % build sensitivities
         for e=1:msh.nel
             dofs = lm(e,:)';
@@ -141,13 +141,13 @@ switch objective_function
             end
             dc = alpha_*dm +beta_*dk;
             
-            dkd = dk +1j*dc -omega*omega*dm;
+            dkd = dk +1j*omega*dc -omega*omega*dm;
             df0dx(e) = real(lambda_(dofs)'*dkd*u(dofs));
         end
     case "dB AIP"
         % solve adjoint problem
-%         lambda_ = Kd\(-1j*0.5*omega*conj(F));
-        lambda_ = -1j*0.5*omega*u;
+        lambda_ = Kd\(-1j*0.5*omega*conj(F));
+%         lambda_ = -1j*0.5*omega*u;
         % build sensitivities
         for e=1:msh.nel
             dofs = lm(e,:)';
@@ -162,7 +162,7 @@ switch objective_function
             end
             dc = alpha_*dm +beta_*dk;
             
-            dkd = dk +1j*dc -omega*omega*dm;
+            dkd = dk +1j*omega*dc -omega*omega*dm;
             df0dx(e) = real(lambda_(dofs)'*dkd*u(dofs));
         end
          constant = (W0_db*log(10)*W)^(-1);
@@ -171,8 +171,8 @@ switch objective_function
         dW = df0dx;
         dC = df0dx;
         % solve adjoint problem
-%         lambda_ = Kd\(-1j*0.5*omega*conj(F));
-        lambda_ = -1j*0.5*omega*u;
+        lambda_ = Kd\(-1j*0.5*omega*conj(F));
+%         lambda_ = -1j*0.5*omega*u;
         % build sensitivities
         for e=1:msh.nel
             dofs = lm(e,:)';
@@ -187,7 +187,7 @@ switch objective_function
             end
             dc = alpha_*dm +beta_*dk;
             
-            dkd = dk +1j*dc -omega*omega*dm;
+            dkd = dk +1j*omega*dc -omega*omega*dm;
             dW(e) = real(lambda_(dofs)'*dkd*u(dofs));
             dC(e) = -us(dofs)'*dk*us(dofs);
         end

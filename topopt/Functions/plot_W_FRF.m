@@ -2,10 +2,8 @@ function [freq, W] = plot_W_FRF(x_val)
 
 load('init.mat');
 
-[K, C, M] = SIMPMatrices(sp, msh, lm, Ke, Me, alpha_, beta_, YOUNG, ...
+[K, C, M] = SIMPMatrices(sp, msh, lm, Ke, Me, 0, 1e-8, YOUNG, ...
     YOUNG_MIN, RHO, RHO_MIN, x_val);
-F = buildForce(sp,msh,problem_data);
-F = F/sum(F);
 
 W = zeros(200,1);
 freq = zeros(200,1);
