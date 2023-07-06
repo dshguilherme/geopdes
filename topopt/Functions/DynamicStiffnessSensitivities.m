@@ -12,6 +12,6 @@ for e=1:nel
         dm = (RHO-RHO_MIN)*m_e;
     end
     dc = alpha_*dm +beta_*dk;
-    dkd(e) = real((lambda(dofs)')*(dk +1j*omega*dc -omega*omega*dm)*u(dofs));
+    dkd(e) = real((lambda(dofs).')*(dk +1j*omega*dc -omega*omega*dm)*u(dofs));
 end
 end

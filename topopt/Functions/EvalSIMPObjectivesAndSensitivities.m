@@ -44,7 +44,7 @@ dcs = StiffnessSensitivities(-us, us, x, msh.nel, lm, Ke, YOUNG, YOUNG_MIN); % S
 lambda_ = -0.5*1j*omega*u;
 dkd = DynamicStiffnessSensitivities(lambda_, omega, u, x, msh.nel, lm, ...
     Ke, Me, YOUNG, YOUNG_MIN, RHO, RHO_MIN, alpha_, beta_);
-
+dkd = dkd';
 dv = Ve'; % Volume Restriction
 
 % Chain-Rules
