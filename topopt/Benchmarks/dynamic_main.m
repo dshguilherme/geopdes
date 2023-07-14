@@ -9,8 +9,8 @@ h = 0.5;
 problem_data = cantilever_beam(L,h);
 
 % Mesh Parameters
-parameters.degree = 3;
-parameters.nsub = [90 30];
+parameters.degree = 1;
+parameters.nsub = [60 20];
 
 % Domain and Material
 parameters.freq = 50;
