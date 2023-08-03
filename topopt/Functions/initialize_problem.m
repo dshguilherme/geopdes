@@ -13,6 +13,7 @@ method_data.nquad      = [degree+1 degree+1];     % Points for the Gaussian quad
 [geometry, msh, sp] = buildSpaces(problem_data,method_data);
 
 % Pre-calculate element volume, stiffness, mass and dofs
+tic
 Ke = zeros(msh.nel,sp.nsh_max,sp.nsh_max);
 Me = Ke;
 lm = zeros(msh.nel,sp.nsh_max);
@@ -23,6 +24,7 @@ for i=1:msh.nel
     Me(i,:,:) = m;
     lm(i,:) = dofs;
 end
+toc
 tmp_msh = msh_precompute(msh);
 Ve = (tmp_msh.element_size.^2)';
 F = buildForce(sp, msh, problem_data);
