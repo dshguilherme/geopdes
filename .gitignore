@@ -19,3 +19,6 @@ topopt/Legacy/forceinverter.m
 topopt/Legacy/areatopoint_mma.m
 topopt/Legacy/areatopoint.m
 *.rar
+*.xls
+*.pdf
+*.xlsx

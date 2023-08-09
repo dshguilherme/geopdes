@@ -81,16 +81,6 @@ function ke = op_su_ev_elements (spu, spv, msh, lambda, mu)
     end
   end
 
-  if (nargout == 1 || nargout == 0)
-    varargout{1} = sparse (rows(1:ncounter), cols(1:ncounter), ...
-                           values(1:ncounter), spv.ndof, spu.ndof);
-  elseif (nargout == 3)
-    varargout{1} = rows(1:ncounter);
-    varargout{2} = cols(1:ncounter);
-    varargout{3} = values(1:ncounter);
-  else
-    error ('op_su_ev: wrong number of output arguments')
-  end
 
 end
 

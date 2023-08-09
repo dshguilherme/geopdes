@@ -1,4 +1,4 @@
-function K = Elasticity_WQ(msh, space, geometry, YOUNG, POISSON)
+function K = Elasticity_WQ(msh, space, geometry, YOUNG, POISSON, xPhys)
 for idim = 1:msh.ndim
     sp1d = space.scalar_spaces{1}.sp_univ(idim);
     Connectivity(idim).neighbors = cellfun (@(x) unique (sp1d.connectivity(:,x)).', sp1d.supp, 'UniformOutput', false);
@@ -54,6 +54,11 @@ small_size = total_size-nsd; % Size of the shear stress matrix
 D1 = lambda*ones(nsd) +2*mu*eye(nsd);
 D2 = mu*eye(small_size);
 D = blkdiag(D1,D2);
+
+rho = SplineInterp(xPhys,x{:});
+rho = reshape(rho,1,1,numel(rho));
+SIMP_penalty = 1e-3+ (rho.^3).*(YOUNG - 1e-3);
+D = bsxfun(@times,D,SIMP_penalty);
 
 C = C_ijkl(E,jac,D,nsd,aux_size);
 K11 = Stiff_fast(space,Quad_rules,Connectivity,BSval,BSder,C{1,1});
