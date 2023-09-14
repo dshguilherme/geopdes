@@ -10,7 +10,7 @@ function [xval, fobj, fres, x_history] = GCMMA(f1,f2,init_mat, filter_options)
     change = 1;
     x_history = zeros(numel(xval),maxoutit);
     fobj = zeros(maxoutit,1);
-    fres = fobj;
+    fres = zeros(maxoutit,m);
     % Start outer iterations
     kktnorm = kkttol+10;
     outit = 0;
@@ -69,10 +69,10 @@ function [xval, fobj, fres, x_history] = GCMMA(f1,f2,init_mat, filter_options)
                xmin,xmax,df0dx,fval,dfdx,a0,a,c,d);
            
     % Output Stuff
-        x_history(:,outit) = xval; x_plot = reshape(xPhys,nsub); fobj(outit) = f0val; fres(outit) = fval; 
-        fprintf(' Iteration: %3i | Objective:%10.4f | Volume: %4.2f | Change:%7.4f\n', ...
-      outit, f0val, mean(xPhys), change);
-    colormap(gray); imagesc(1-rot90(x_plot)); caxis([0 1]); axis equal;axis off;drawnow;
+        x_history(:,outit) = xval; x_plot = reshape(xPhys,nsub); fobj(outit) = f0val; fres(outit,:) = fval; 
+        fprintf(' Iteration: %3i | Objective:%10.4f | Mass: %4.2f | Change:%7.4f\n', ...
+      outit, f0val, sum(Ae.*xPhys), change);
+    grafo = nrbplot(geometry.nurbs,nsub); colormap(jet); grafo.CData = x_plot; colorbar; drawnow; %imagesc(rot90(x_plot)); colorbar; caxis([0 100]); axis equal;axis off;drawnow;
     end
     fobj = fobj(1:outit); fres = fres(1:outit); x_history = x_history(:,1:outit);
 end

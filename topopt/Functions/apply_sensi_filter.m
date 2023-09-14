@@ -1,7 +1,7 @@
 function [df0dx, dfdx] = apply_sensi_filter(filter_options, xPhys, df0dx, dfdx)
 h = filter_options.h;
 Hs = filter_options.Hs;
-shape = filter_options.shape;
+shape = filter_options.subshape;
 switch filter_options.type
     case "simple"
         tmp = reshape(df0dx.*xPhys,shape);

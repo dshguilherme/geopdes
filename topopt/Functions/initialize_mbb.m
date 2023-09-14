@@ -103,19 +103,21 @@ dr_dofs = unique(union(drchlt_dofs, symm_dofs));
 filter_options.type = philter;
 filter_options.h = h;
 filter_options.Hs = Hs;
-filter_options.shape = nsub;
+filter_options.subshape = nsub;
+Cs0 = 1;
+aW0 = 1;
+tmp = objective_function;
+objective_function = "Initial";
 % f1 = @mbb_functions_and_sensitivities;
 % f2 = @mbb_functions;
-f1 = @cantilever_functions_and_sensitivities;
-f2 = @cantilever_functions;
-
-tmp = objective_function;
-objective_function = "Cs0";
-save('init.mat');
-[Cs0 ~] = f2(xval);
-objective_function = "W0";
-save('init.mat');
-[W0 ~] = f2(xval);
+% f1 = @cantilever_functions_and_sensitivities;
+% f2 = @cantilever_functions;
+f1 = @EvalSIMPObjectivesAndSensitivities;
+f2 = @EvalSIMPObjectives;
+save('init.mat')
+[f0, ~] = f2(xval);
+Cs0 = f0(1);
+aW0 = f0(2);
 objective_function = tmp;
 save('init.mat');
 end

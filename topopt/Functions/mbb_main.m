@@ -16,6 +16,7 @@ parameters.freq = 1;
 parameters.omega = parameters.freq*2*pi;
 parameters.YOUNG = 1;
 parameters.YOUNG_MIN = 1e-3;
+parameters.POISSON = 0.3;
 parameters.RHO = 1;
 parameters.RHO_MIN = 1e-3;
 parameters.alpha_ = 0;

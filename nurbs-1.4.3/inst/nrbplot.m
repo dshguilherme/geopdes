@@ -1,4 +1,4 @@
-function nrbplot (nurbs, subd, varargin)
+function varargout = nrbplot (nurbs, subd, varargin)
 % 
 % NRBPLOT: Plot a NURBS curve or surface, or the boundary of a NURBS volume.
 % 
@@ -109,7 +109,8 @@ if (iscell (nurbs.knots))
     surfl (squeeze(p(1,:,:)), squeeze(p(2,:,:)), squeeze(p(3,:,:)));
     shading interp;
   else 
-    surf (squeeze (p(1,:,:)), squeeze (p(2,:,:)), squeeze (p(3,:,:)));
+   a = surf (squeeze (p(1,:,:)), squeeze (p(2,:,:)), squeeze (p(3,:,:)));
+   varargout{1} = a;
     shading faceted;
   end
  elseif (size (nurbs.knots,2) == 3) % plot the boundaries of a NURBS volume

@@ -41,7 +41,7 @@ function me = op_u_v_elements (spu, spv, msh, coeff)
   rows = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
   cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
   values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
-
+  me = zeros(msh.nel,spu.nsh_max*spv.nsh_max);
   if (~isempty (msh.jacdet))
     jacdet_weights = msh.jacdet .* msh.quad_weights .* coeff;
   else

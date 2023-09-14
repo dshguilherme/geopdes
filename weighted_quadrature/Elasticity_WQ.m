@@ -55,25 +55,25 @@ D1 = lambda*ones(nsd) +2*mu*eye(nsd);
 D2 = mu*eye(small_size);
 D = blkdiag(D1,D2);
 
-rho = SplineInterp(xPhys,x{:});
-rho = reshape(rho,1,1,numel(rho));
-SIMP_penalty = 1e-3+ (rho.^3).*(YOUNG - 1e-3);
-D = bsxfun(@times,D,SIMP_penalty);
+% rho = SplineInterp(xPhys,x{:});
+% rho = reshape(rho,1,1,numel(rho));
+% SIMP_penalty = 1e-3+ (rho.^3).*(YOUNG - 1e-3);
+% D = bsxfun(@times,D,SIMP_penalty);
 
 C = C_ijkl(E,jac,D,nsd,aux_size);
 K11 = Stiff_fast(space,Quad_rules,Connectivity,BSval,BSder,C{1,1});
 K12 = Stiff_fast(space,Quad_rules,Connectivity,BSval,BSder,C{1,2});
-% K21 = Stiff_fast(space,Quad_rules,Connectivity,BSval,BSder,C{2,1});
-K21 = K12';
+K21 = Stiff_fast(space,Quad_rules,Connectivity,BSval,BSder,C{2,1});
+% K21 = K12';
 K22 = Stiff_fast(space,Quad_rules,Connectivity,BSval,BSder,C{2,2});
 if space.ncomp == 3
 K13 = Stiff_fast(space,Quad_rules,Connectivity,BSval,BSder,C{1,3});
 K23 = Stiff_fast(space,Quad_rules,Connectivity,BSval,BSder,C{2,3});
 K33 = Stiff_fast(space,Quad_rules,Connectivity,BSval,BSder,C{3,3});
-% K31 = Stiff_fast(space,Quad_rules,Connectivity,BSval,BSder,C{3,1});
-K31 = K13';
-% K32 = Stiff_fast(space,Quad_rules,Connectivity,BSval,BSder,C{3,2});
-K32 = K23';
+K31 = Stiff_fast(space,Quad_rules,Connectivity,BSval,BSder,C{3,1});
+% K31 = K13';
+K32 = Stiff_fast(space,Quad_rules,Connectivity,BSval,BSder,C{3,2});
+% K32 = K23';
 K = [K11, K12, K13; K21, K22, K23; K31, K32, K33];
 else
     K = [K11, K12; K21, K22];

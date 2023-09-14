@@ -39,7 +39,7 @@ deg = 3;
 clear method_data
 method_data.degree     = [deg deg];
 method_data.regularity = [deg-1 deg-1];
-method_data.nsub       = [16 16];
+method_data.nsub       = [30 30];
 method_data.nquad      = [deg+1 deg+1];
 
 % Call to solver

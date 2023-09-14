@@ -7,12 +7,15 @@ x = apply_x_filter(filter_options,x);
 %% Assembly
 [Ks, C, M] = SIMPMatrices(sp, msh, lm, Ke, Me, alpha_, beta_,YOUNG, ...
     YOUNG_MIN, RHO, RHO_MIN, x);
+[Ks2, C, M2] = SIMPMatrices_WQ(msh, sp, geometry, YOUNG, POISSON, RHO, alpha_, beta_, reshape(x,filter_options.subshape));
 Kd = Ks +1j*omega*C -omega*omega*M;
+
 
 %% Solve problem
 dr_values = zeros(length(dr_dofs),1);
 u = SolveDirichletSystem(Kd,F,dr_dofs,free_dofs,dr_values);
 us = SolveDirichletSystem(Ks,F,dr_dofs,free_dofs,dr_values);
+us2 = SolveDirichletSystem(Ks2,F,dr_dofs,free_dofs,dr_values);
 
 %% Objective Functions and Constraints
 Cs = F'*us; % Static Compliance
@@ -36,6 +39,7 @@ Vc = sum(x.*Ve)-vol_frac*sum(Ve); % Volume Constraint
 
 %% Sensitivities
 dcs = StiffnessSensitivities(-us, us, x, msh.nel, lm, Ke, YOUNG, YOUNG_MIN); % Static Compliance
+% dcs = fastStiffnessSentivities(ke,lm,-us,us,x,YOUNG); % Static Compliance sensitivity
 % lambda_ = SolveDirichletSystem(Kd,-0.5*1j*omega*conj(F),dr_dofs,free_dofs,dr_values);
 % dk = StiffnessSensitivities(lambda_, u, x, msh.nel, lm, Ke, YOUNG, YOUNG_MIN);
 % dm = MassSensitivities(lambda_,u, x, msh.nel, lm, Me, RHO, RHO_MIN);
@@ -44,6 +48,7 @@ dcs = StiffnessSensitivities(-us, us, x, msh.nel, lm, Ke, YOUNG, YOUNG_MIN); % S
 lambda_ = -0.5*1j*omega*u;
 dkd = DynamicStiffnessSensitivities(lambda_, omega, u, x, msh.nel, lm, ...
     Ke, Me, YOUNG, YOUNG_MIN, RHO, RHO_MIN, alpha_, beta_);
+% dkd = fastDynamicStiffnessSensitivities(ke,me,lm,lambda_,u,omega,x,YOUNG,RHO,alpha_,beta_);
 dkd = dkd';
 dv = Ve'; % Volume Restriction
 

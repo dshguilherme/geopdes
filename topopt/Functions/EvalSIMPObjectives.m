@@ -2,11 +2,12 @@ function [f0val, fval] = EvalSIMPObjectives(xval)
 %% Filtering
 x = xval;
 load('init.mat');
-x = apply_x_filter(filter_options,x);
+% x = apply_x_filter(filter_options,x);
 
 %% Assembly
 [Ks, C, M] = SIMPMatrices(sp, msh, lm, Ke, Me, alpha_, beta_,YOUNG, ...
     YOUNG_MIN, RHO, RHO_MIN, x);
+% [Ks, C, M] = SIMPMatrices_WQ(msh, sp, geometry, YOUNG, POISSON, RHO, alpha_, beta_, reshape(x,filter_options.subshape));
 Kd = Ks +1j*omega*C -omega*omega*M;
 
 %% Solve problem
