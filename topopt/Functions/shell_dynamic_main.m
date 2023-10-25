@@ -47,13 +47,13 @@ figure(1)
 %% Plots
 
 % History plots
-% objective_function = 'History';
-% save('init_shell.mat', '-append', 'objective_function');
-% W_history = zeros(length(fobj),1);
-% Cs_history = W_history;
-% for i=1:length(fobj)
-%     x = x_history(:,i);
-%     [WC, ~] = f2(x);
-%     W_history(i) = WC(1);
-%     Cs_history(i) = WC(2);
-% end
+objective_function = 'History';
+save('init_shell.mat', '-append', 'objective_function');
+W_history = zeros(length(fobj),1);
+Cs_history = W_history;
+for i=1:length(fobj)
+    x = x_history(:,i);
+    [WC, ~] = f2(x);
+    W_history(i) = WC(1);
+    Cs_history(i) = WC(2);
+end

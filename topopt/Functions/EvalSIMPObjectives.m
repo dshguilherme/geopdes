@@ -43,6 +43,8 @@ switch objective_function
         f0val = Cs_scaled;
     case "dB compliance"
         f0val = Cs_db_scaled;
+    case "dynamic compliance"
+        f0val = real(F'*u);
     case "AIP"
         f0val = aW;
     case "dB AIP"
@@ -53,6 +55,20 @@ switch objective_function
         f0val = [aW_db_scaled, Cs_scaled];
     case "Initial"
         f0val = [Cs, aW];
+   case "eigengap"
+        [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),2,'sm');
+        vals = diag(vals);
+        f0val = vals(1) - vals(2);
+    case "eigenmax"
+        [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),1,'sm');
+        vals = diag(vals);
+        f0val = -vals(1);
+    case "eigenvalues"
+        [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),10,'sm');
+        vals = diag(vals);
+        f0val = vals;
+
+
 end
 fval = Vc;
 end

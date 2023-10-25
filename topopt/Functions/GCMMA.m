@@ -71,7 +71,7 @@ function [xval, fobj, fres, x_history] = GCMMA(f1,f2,init_mat, filter_options)
     % Output Stuff
         x_history(:,outit) = xval; x_plot = reshape(xPhys,nsub); fobj(outit) = f0val; fres(outit,:) = fval; 
         fprintf(' Iteration: %3i | Objective:%10.4f | Mass: %4.2f | Change:%7.4f\n', ...
-      outit, f0val, sum(Ae.*xPhys), change);
+      outit, f0val, sum(Ve.*xPhys), change);
     grafo = nrbplot(geometry.nurbs,nsub); colormap(jet); grafo.CData = x_plot; colorbar; drawnow; %imagesc(rot90(x_plot)); colorbar; caxis([0 100]); axis equal;axis off;drawnow;
     end
     fobj = fobj(1:outit); fres = fres(1:outit); x_history = x_history(:,1:outit);

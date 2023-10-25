@@ -26,7 +26,7 @@ Me = op_u_v_elements(sp1, sp1, msh1, RHO);
 lm = sp1.connectivity';
 
 % Restriction
-Ae = (msh1.element_size.^2)'; % Element area
+Ve = (msh1.element_size.^2)'; % Element area
 
 % Force vector
 F = op_f_v_tp (sp, msh, problem_data.f);

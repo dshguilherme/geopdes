@@ -1,4 +1,4 @@
-function mbb_beam(degree, nsub, vol_frac, rmin, method, change_max, max_iter)
+function [f, xPhys, loop] = mbb_beam(degree, nsub, vol_frac, rmin, method, change_max, max_iter)
 L = 60;
 hh = 20;
 d = 0.05*L;
@@ -109,7 +109,7 @@ a = zeros(m,1); % column vector with the constants a_i
 c_MMA = 10000*ones(m,1); %column vector with the constants c_i*y_i
 d = zeros(m,1); %column vector with the constants 0.5*d_i*(y_i)^2
 
-
+f = zeros(max_iter,1);
 while change > change_max && loop < max_iter
 loop = loop+1;
 % Pre-alocating vectors/solutions
@@ -190,6 +190,7 @@ x = xPhys(:);
 fprintf(' Iteration.:%5i | Compliance.:%11.2f | Vol.:%7.3f | Change.:%7.3f\n', ...
     loop, compliance, volum,change);
 colormap(gray); imagesc(xx,yy,1-rot90(xPhys)); caxis([0 1]); axis equal; axis off; drawnow;
-
+f(loop) = compliance;
 end
+f = f(1:loop);
 end

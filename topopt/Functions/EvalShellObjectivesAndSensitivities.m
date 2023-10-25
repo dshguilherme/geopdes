@@ -23,10 +23,10 @@ Cs_scaled = 100*Cs/Cs0; % Scaled Compliance
 
 % Mean quadratic velocity
 V2_rms = 0;
-Area = sum(Ae);
+Area = sum(Ve);
 for i=1:msh.nel
     dofs = lm(i,:);
-    V2_rms = V2_rms + Ae(i)*(u(dofs)'*u(dofs));
+    V2_rms = V2_rms + Ve(i)*(u(dofs)'*u(dofs));
 end
 V2_rms = (omega*omega/Area)*V2_rms;
 
@@ -35,9 +35,9 @@ V2_db = 100 +10*log10(V2_rms); % dB mean quadratic velocity
 V0_db = 100 +10*log10(V0); % V0 dB
 V2_db_scaled = 100*V2_db/V0_db; % Scaled dB mean quadratic velocity
 
-M_max = RHO*sum(Ae.*thickness)*(1+maximum_to_add); % Maximum added mass
-M_min = RHO*sum(Ae.*thickness)*(1-maximum_to_take); % Minimum added mass
-Mass = RHO*sum(Ae.*t); % Current mass
+M_max = RHO*sum(Ve.*thickness)*(1+maximum_to_add); % Maximum added mass
+M_min = RHO*sum(Ve.*thickness)*(1-maximum_to_take); % Minimum added mass
+Mass = RHO*sum(Ve.*t); % Current mass
 h1 = Mass -M_max;
 h2 = -Mass +M_min;
 
@@ -56,7 +56,7 @@ dv2dt = zeros(msh.nel,1);
 dcs = dv2dt;
 for i=1:msh.nel
     dofs = lm(i,:);
-    ell = lambda_(dofs).'/Ae(i);
+    ell = lambda_(dofs).'/Ve(i);
     you = u(dofs);
     Bend = 3*t(i)*t(i)*reshape(Bke(i,:),m_shape);
     Stress = reshape(Ske(i,:),m_shape);
@@ -69,8 +69,8 @@ for i=1:msh.nel
 end
 
 % Restrictions
-dh1dt = RHO.*Ae';
-dh2dt = -RHO.*Ae';
+dh1dt = RHO.*Ve';
+dh2dt = -RHO.*Ve';
 
 % Chain Rules
 dc_scaled = 100*dcs/Cs0;
@@ -102,6 +102,30 @@ switch objective_function
     case "mixed"
         f0val = neta*V2_db_scaled +(1-neta)*Cs_scaled;
         df0dx = neta*dv_db +(1-neta)*dc_scaled;
+    case "eigenmax"
+        [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),1,'sm');
+        vals = diag(vals);
+        new_vec = zeros(length(free_dofs)+length(dr_dofs),1);
+        new_vec(free_dofs,1) = vec(:,1);
+        vec1 = new_vec(:,1);
+        f0val = -vals(1);
+        dke1 = StiffnessSensitivities(vec1, vec1, x, msh.nel, lm, Ke, YOUNG, YOUNG_MIN);
+        dme1 = MassSensitivities(vec1, vec1, x, msh.nel, lm, Me, RHO, RHO_MIN);
+        df0dx = -dke1 +vals(1)*dme1;
+    case "eigengap"
+        [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),2,'sm');
+        vals = diag(vals);
+        new_vec = zeros(length(free_dofs)+length(dr_dofs),2);
+        new_vec(free_dofs,1) = vec(:,1);
+        new_vec(free_dofs,2) = vec(:,2);
+        vec1 = new_vec(:,1);
+        vec2 = new_vec(:,2);
+        f0val = vals(1) - vals(2);
+        dke1 = StiffnessSensitivities(vec1, vec1, x, msh.nel, lm, Ke, YOUNG, YOUNG_MIN);
+        dke2 = StiffnessSensitivities(vec2, vec2, x, msh.nel, lm, Ke, YOUNG, YOUNG_MIN);
+        dme1 = MassSensitivities(vec1, vec1, x, msh.nel, lm, Me, RHO, RHO_MIN);
+        dme2 = MassSensitivities(vec2, vec2, x, msh.nel, lm, Me, RHO, RHO_MIN);
+        df0dx = (dke1 -vals(1)*dme1) -(dke2 -vals(2)*dme2);  
 end
 dfdx = [dh1dt; dh2dt]; 
 end

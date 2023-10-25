@@ -7,7 +7,7 @@ x = apply_x_filter(filter_options,x);
 %% Assembly
 [Ks, C, M] = SIMPMatrices(sp, msh, lm, Ke, Me, alpha_, beta_,YOUNG, ...
     YOUNG_MIN, RHO, RHO_MIN, x);
-[Ks2, C, M2] = SIMPMatrices_WQ(msh, sp, geometry, YOUNG, POISSON, RHO, alpha_, beta_, reshape(x,filter_options.subshape));
+% [Ks2, C, M2] = SIMPMatrices_WQ(msh, sp, geometry, YOUNG, POISSON, RHO, alpha_, beta_, reshape(x,filter_options.subshape));
 Kd = Ks +1j*omega*C -omega*omega*M;
 
 
@@ -15,7 +15,7 @@ Kd = Ks +1j*omega*C -omega*omega*M;
 dr_values = zeros(length(dr_dofs),1);
 u = SolveDirichletSystem(Kd,F,dr_dofs,free_dofs,dr_values);
 us = SolveDirichletSystem(Ks,F,dr_dofs,free_dofs,dr_values);
-us2 = SolveDirichletSystem(Ks2,F,dr_dofs,free_dofs,dr_values);
+% us2 = SolveDirichletSystem(Ks2,F,dr_dofs,free_dofs,dr_values);
 
 %% Objective Functions and Constraints
 Cs = F'*us; % Static Compliance
@@ -69,6 +69,9 @@ switch objective_function
     case "scaled compliance"
         f0val = Cs_scaled;
         df0dx = dc_scaled;
+    case "dynamic compliance"
+        f0val = real(F'*u);
+        df0dx = dkd;
     case "dB compliance"
         f0val = Cs_db_scaled;
         df0dx = dc_db;
@@ -81,6 +84,34 @@ switch objective_function
     case "mixed"
         f0val = neta*aW_db_scaled +(1-neta)*Cs_scaled;
         df0dx = neta*dW_db +(1-neta)*dc_scaled;
+    case "eigenmax"
+        [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),1,'sm');
+        vals = diag(vals);
+        new_vec = zeros(length(free_dofs)+length(dr_dofs),1);
+        new_vec(free_dofs,1) = vec(:,1);
+        vec1 = new_vec(:,1);
+        f0val = -vals(1);
+        dke1 = StiffnessSensitivities(vec1, vec1, x, msh.nel, lm, Ke, YOUNG, YOUNG_MIN);
+        dme1 = MassSensitivities(vec1, vec1, x, msh.nel, lm, Me, RHO, RHO_MIN);
+        df0dx = -dke1 +vals(1)*dme1;
+    case "eigengap"
+        [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),2,'sm');
+        vals = diag(vals);
+        new_vec = zeros(length(free_dofs)+length(dr_dofs),2);
+        new_vec(free_dofs,1) = vec(:,1);
+        new_vec(free_dofs,2) = vec(:,2);
+        vec1 = new_vec(:,1);
+        vec2 = new_vec(:,2);
+        f0val = vals(1) - vals(2);
+        dke1 = StiffnessSensitivities(vec1, vec1, x, msh.nel, lm, Ke, YOUNG, YOUNG_MIN);
+        dke2 = StiffnessSensitivities(vec2, vec2, x, msh.nel, lm, Ke, YOUNG, YOUNG_MIN);
+        dme1 = MassSensitivities(vec1, vec1, x, msh.nel, lm, Me, RHO, RHO_MIN);
+        dme2 = MassSensitivities(vec2, vec2, x, msh.nel, lm, Me, RHO, RHO_MIN);
+        df0dx = (dke1 -vals(1)*dme1) -(dke2 -vals(2)*dme2);
+    case "eigenvalues"
+        [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),10,'sm');
+        vals = diag(vals);
+        f0val = vals;
 end
 fval = Vc;
 dfdx = dv;

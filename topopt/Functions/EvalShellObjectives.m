@@ -24,10 +24,10 @@ Cs_scaled = 100*Cs/Cs0; % Scaled Compliance
 
 % Mean quadratic velocity
 V2_rms = 0;
-Area = sum(Ae);
+Area = sum(Ve);
 for i=1:msh.nel
     dofs = lm(i,:);
-    V2_rms = V2_rms + Ae(i)*(u(dofs)'*u(dofs));
+    V2_rms = V2_rms + Ve(i)*(u(dofs)'*u(dofs));
 end
 V2_rms = (omega*omega/Area)*V2_rms;
 
@@ -36,9 +36,9 @@ V2_db = 100 +10*log10(V2_rms); % dB mean quadratic velocity
 V0_db = 100 +10*log10(V0); % V0 dB
 V2_db_scaled = 100*V2_db/V0_db; % Scaled dB mean quadratic velocity
 
-M_max = RHO*sum(Ae.*thickness)*(1+maximum_to_add); % Maximum added mass
-M_min = RHO*sum(Ae.*thickness)*(1-maximum_to_take); % Minimum added mass
-Mass = RHO*sum(Ae.*t); % Current mass
+M_max = RHO*sum(Ve.*thickness)*(1+maximum_to_add); % Maximum added mass
+M_min = RHO*sum(Ve.*thickness)*(1-maximum_to_take); % Minimum added mass
+Mass = RHO*sum(Ve.*t); % Current mass
 h1 = Mass -M_max;
 h2 = -Mass +M_min;
 
@@ -62,6 +62,15 @@ switch objective_function
         f0val = [V2_db_scaled, Cs_scaled];
     case "Initial"
         f0val = [Cs, V2_rms];
+    case "eigenmax"
+        [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),1,'sm');
+        vals = diag(vals);
+        f0val = -vals(1);
+    case "eigengap"
+        [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),2,'sm');
+        vals = diag(vals);
+        f0val = vals(1) - vals(2);      
+   
 end
 
 
