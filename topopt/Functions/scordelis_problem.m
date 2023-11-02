@@ -13,10 +13,10 @@ problem_data.drchlt_sides = [3 4];
 problem_data.drchlt_components = {[1 3] [1 3]};
 
 % Physical parameters
-E = 4.32e8;
+E = 1;
 nu = 0.0;
-thickness = 0.25;
-density = 1000;
+thickness = 1;
+density = 1;
 
 problem_data.E_coeff = @(x, y, z) E * ones(size(x));
 problem_data.nu_coeff = @(x, y, z) nu * ones(size(x));

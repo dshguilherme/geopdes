@@ -30,6 +30,7 @@ Ve = (msh1.element_size.^2)'; % Element area
 
 % Force vector
 F = op_f_v_tp (sp, msh, problem_data.f);
+F = Fmag*F/sum(F);
 
 
 %% Initialize MMA constants
@@ -82,6 +83,7 @@ filter_options.subshape = nsub;
 %% Objective Function
 Cs0 = 1;
 V0 = 1;
+aW0 = 1;
 tmp = objective_function;
 objective_function = "Initial";
 
@@ -93,6 +95,7 @@ save('init_shell.mat')
 [f0, ~] = f2(xval);
 Cs0 = f0(1);
 V0 = f0(2);
+aW0 = f0(3);
 objective_function = tmp;
 save('init_shell.mat');
 end

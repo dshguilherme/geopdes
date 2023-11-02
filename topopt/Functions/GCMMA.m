@@ -14,7 +14,7 @@ function [xval, fobj, fres, x_history] = GCMMA(f1,f2,init_mat, filter_options)
     % Start outer iterations
     kktnorm = kkttol+10;
     outit = 0;
-    while (kktnorm > kkttol) & (outit < maxoutit) & (change > change_min)
+    while (kktnorm > kkttol) & (outit < maxoutit)  &  (change > change_min)
         outit = outit+1;
         outeriter = outeriter+1;
     %     Calculate low, upp, raa0 and raa
@@ -53,7 +53,9 @@ function [xval, fobj, fres, x_history] = GCMMA(f1,f2,init_mat, filter_options)
         end
     end
     % End of inner iterations. Update values
-    change = max(abs(xmma(:)-xval(:)));
+%     change = max(abs(xmma(:)-xval(:)))/norm(xval);
+%     change = 100*abs((f0val-f0valnew)/f0val);
+    change = max(abs(xmma(:)-xval(:)))/parameters.thickness;
     xold2 = xold1;
     xold1 = xval;
     xval = xmma;
@@ -70,9 +72,9 @@ function [xval, fobj, fres, x_history] = GCMMA(f1,f2,init_mat, filter_options)
            
     % Output Stuff
         x_history(:,outit) = xval; x_plot = reshape(xPhys,nsub); fobj(outit) = f0val; fres(outit,:) = fval; 
-        fprintf(' Iteration: %3i | Objective:%10.4f | Mass: %4.2f | Change:%7.4f\n', ...
-      outit, f0val, sum(Ve.*xPhys), change);
+        fprintf(' Iteration: %3i | Objective: %1.2e | Mass: %4.1f kg | Restrictions: %2.2e | %2.2e | Change: %1.2e\n', ...
+      outit, f0val, RHO*sum(Ve.*xPhys), fval(1), fval(2), change);
     grafo = nrbplot(geometry.nurbs,nsub); colormap(jet); grafo.CData = x_plot; colorbar; drawnow; %imagesc(rot90(x_plot)); colorbar; caxis([0 100]); axis equal;axis off;drawnow;
     end
-    fobj = fobj(1:outit); fres = fres(1:outit); x_history = x_history(:,1:outit);
+    fobj = fobj(1:outit); fres = fres(1:outit,:); x_history = x_history(:,1:outit);
 end

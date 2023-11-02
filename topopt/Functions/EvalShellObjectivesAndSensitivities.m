@@ -5,8 +5,8 @@ load('init_shell.mat');
 t = apply_x_filter(filter_options,t);
 
 %% Assembly
-Ks = shellStiffnessFromElements(Bke, Ske, lm, t);
-M = shellMassFromElements(Me, lm, t);
+Ks = shellStiffnessFromElements(Bke, Ske, lm, t, t, YOUNG, modo);
+M = shellMassFromElements(Me, lm, t, t, RHO, modo);
 C = alpha_*M +beta_*Ks;
 Kd = Ks +1j*C -omega*omega*M;
 
@@ -21,15 +21,18 @@ us = SolveDirichletSystem(Ks, F, dr_dofs, free_dofs, dr_values);
 Cs = F'*us; % Static Compliance
 Cs_scaled = 100*Cs/Cs0; % Scaled Compliance
 
-% Mean quadratic velocity
-V2_rms = 0;
-Area = sum(Ve);
-for i=1:msh.nel
-    dofs = lm(i,:);
-    V2_rms = V2_rms + Ve(i)*(u(dofs)'*u(dofs));
-end
-V2_rms = (omega*omega/Area)*V2_rms;
+% Dynamic Compliance
+Cd = F'*u;
 
+% Active Input Power
+aW = 0.5*omega*real(1j*F'*u); % Active Input Power
+aW_db = 100 +10*log10(aW);
+aW0_db = 100+10*log10(aW0);
+aW_db_scaled = 100*aW_db/aW0_db;
+
+% Mean quadratic velocity
+velocity = 1j*omega*u;
+V2_rms = velocity'*velocity;
 V2_scaled = 100*V2_rms/V0; % Scaled quadratic velocity
 V2_db = 100 +10*log10(V2_rms); % dB mean quadratic velocity
 V0_db = 100 +10*log10(V0); % V0 dB
@@ -41,43 +44,21 @@ Mass = RHO*sum(Ve.*t); % Current mass
 h1 = Mass -M_max;
 h2 = -Mass +M_min;
 
+
 fval = [h1; h2];
 
 %% Sensitivities
-
-% Adjoint Problem
-UR = real(u);
-UI = imag(u);
-lambda_ = Kd\((-2*omega*omega/Area).*(UR-UI));
-
-% Velocity Sensitivity
-m_shape = [sp.nsh_max, sp.nsh_max];
-dv2dt = zeros(msh.nel,1);
-dcs = dv2dt;
-for i=1:msh.nel
-    dofs = lm(i,:);
-    ell = lambda_(dofs).'/Ve(i);
-    you = u(dofs);
-    Bend = 3*t(i)*t(i)*reshape(Bke(i,:),m_shape);
-    Stress = reshape(Ske(i,:),m_shape);
-    dk = Bend+Stress;
-    dm = reshape(Me(i,:),m_shape);
-    dc = alpha_*dm +beta_*dk;
-    dkd = dk+1j*dc-omega*omega*dm;
-    dv2dt(i) = real(ell*dkd*you);
-    dcs(i) = -us(dofs)'*dk*us(dofs);
-end
 
 % Restrictions
 dh1dt = RHO.*Ve';
 dh2dt = -RHO.*Ve';
 
 % Chain Rules
-dc_scaled = 100*dcs/Cs0;
+% dc_scaled = 100*dcs/Cs0;
 
-dv_scaled = 100*dv2dt/V0;
-dv_db_constant = 10/(log(10)*V2_rms);
-dv_db = 100*dv_db_constant*dv2dt/V0_db;
+
+
+
 
 %% Output
 % "compliance", "scaled compliance", "v2_rms", "v2_scaled", "v2_db",
@@ -92,13 +73,28 @@ switch objective_function
         df0dx = dc_scaled;
     case "v2_rms"
         f0val = V2_rms;
-        df0dx = dv2dt;
+        ell = Kd\(2*omega*omega*(u'.')); % Adjoint system solve
+        dk = PlateStiffnessSensiContinuous(ell, u, t, msh, sp, lm, Bke, Ske, YOUNG);
+        dm = PlateMassSensiContinuous(ell, u, t, msh, sp, lm, Me, RHO);
+        dc = alpha_*dm +beta_*dk;
+        df0dx = real(dk +1j*omega*dc -omega*omega*dm);
     case "v2_scaled"
         f0val = V2_scaled;
-        df0dx = dv_scaled;
+        ell = Kd\(2*omega*omega*(u'.')); % Adjoint system solve
+        dk = PlateStiffnessSensiContinuous(ell, u, t, msh, sp, lm, Bke, Ske, YOUNG);
+        dm = PlateMassSensiContinuous(ell, u, t, msh, sp, lm, Me, RHO);
+        dc = alpha_*dm +beta_*dk;
+        df0dx = real(dk +1j*omega*dc -omega*omega*dm);
+        df0dx = 100*df0dx/V0;
     case "v2_db"
         f0val = V2_db_scaled;
-        df0dx = dv_db;
+        ell = Kd\(2*omega*omega*(u'.')); % Adjoint system solve
+        dk = PlateStiffnessSensiContinuous(ell, u, t, msh, sp, lm, Bke, Ske, YOUNG);
+        dm = PlateMassSensiContinuous(ell, u, t, msh, sp, lm, Me, RHO);
+        dc = alpha_*dm +beta_*dk;
+        df0dx = real(dk +1j*omega*dc -omega*omega*dm);
+        dv_db_constant = 10/(log(10)*V2_rms);
+        df0dx = 100*dv_db_constant*df0dx/V0_db;
     case "mixed"
         f0val = neta*V2_db_scaled +(1-neta)*Cs_scaled;
         df0dx = neta*dv_db +(1-neta)*dc_scaled;
@@ -109,9 +105,9 @@ switch objective_function
         new_vec(free_dofs,1) = vec(:,1);
         vec1 = new_vec(:,1);
         f0val = -vals(1);
-        dke1 = StiffnessSensitivities(vec1, vec1, x, msh.nel, lm, Ke, YOUNG, YOUNG_MIN);
-        dme1 = MassSensitivities(vec1, vec1, x, msh.nel, lm, Me, RHO, RHO_MIN);
-        df0dx = -dke1 +vals(1)*dme1;
+        dk = PlateStiffnessSensiContinuous(vec1, vec1, t, msh, sp, lm, Bke, Ske, YOUNG);
+        dm = PlateMassSensiContinuous(vec1, vec1, t, msh, sp, lm, Me, RHO);
+        df0dx = -dk +vals(1)*dm;
     case "eigengap"
         [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),2,'sm');
         vals = diag(vals);
@@ -121,11 +117,29 @@ switch objective_function
         vec1 = new_vec(:,1);
         vec2 = new_vec(:,2);
         f0val = vals(1) - vals(2);
-        dke1 = StiffnessSensitivities(vec1, vec1, x, msh.nel, lm, Ke, YOUNG, YOUNG_MIN);
-        dke2 = StiffnessSensitivities(vec2, vec2, x, msh.nel, lm, Ke, YOUNG, YOUNG_MIN);
-        dme1 = MassSensitivities(vec1, vec1, x, msh.nel, lm, Me, RHO, RHO_MIN);
-        dme2 = MassSensitivities(vec2, vec2, x, msh.nel, lm, Me, RHO, RHO_MIN);
-        df0dx = (dke1 -vals(1)*dme1) -(dke2 -vals(2)*dme2);  
+        dke1 = PlateStiffnessSensiContinuous(vec1, vec1, t, msh, sp, lm, Bke, Ske, YOUNG);
+        dke2 = PlateStiffnessSensiContinuous(vec2, vec2, t, msh, sp, lm, Bke, Ske, YOUNG);
+        dme1 = PlateMassSensiContinuous(vec1, vec1, t, msh, sp, lm, Me, RHO);
+        dme2 = PlateMassSensiContinuous(vec2, vec2, t, msh, sp, lm, Me, RHO);
+        df0dx = (dke1 -vals(1)*dme1) -(dke2 -vals(2)*dme2);
+    case "AIP"
+        f0val = aW;
+        ell = -0.5*1j*omega*u;
+        dk = PlateStiffnessSensiContinuous(ell, u, t, msh, sp, lm, Bke, Ske, YOUNG);
+        dm = PlateMassSensiContinuous(ell, u, t, msh, sp, lm, Me, RHO);
+        dc = alpha_*dm +beta_*dk;
+        df0dx = real(dk +1j*omega*dc -omega*omega*dm);
+    case "dB AIP"
+        f0val = aW_db_scaled;
+        ell = -0.5*1j*omega*u;
+        dk = PlateStiffnessSensiContinuous(ell, u, t, msh, sp, lm, Bke, Ske, YOUNG);
+        dm = PlateMassSensiContinuous(ell, u, t, msh, sp, lm, Me, RHO);
+        dc = alpha_*dm +beta_*dk;
+        dW_db_constant = 10/(log(10)*aW);
+        dkd = real(dk +1j*omega*dc -omega*omega*dm);
+        dW_db = 100*dW_db_constant*dkd/aW0_db;
+        df0dx = dW_db;
+        
 end
 dfdx = [dh1dt; dh2dt]; 
 end
