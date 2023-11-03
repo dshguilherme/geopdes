@@ -7,22 +7,22 @@ close all
 L = 1;
 h = 0.5;
 radius = 1;
-problem_data = compliant_mechanism(L,h);
+problem_data = cantilever_beam(L,h);
 
 % Mesh Parameters
 parameters.degree = 2;
 parameters.nsub = [100 50];
 
 % Domain and Material
-parameters.freq = 5;
+parameters.freq = 150;
 parameters.omega = parameters.freq*2*pi;
-parameters.YOUNG = 1; %210e9;
+parameters.YOUNG = 210e9;
 parameters.YOUNG_MIN = 1e-3;
 parameters.POISSON = 0.3;
-parameters.RHO = 1; %7860;
+parameters.RHO = 7860;
 parameters.RHO_MIN = 1e-3;
-parameters.alpha_ = 1.2*parameters.omega;
-parameters.beta_ = 0.1/parameters.omega;
+parameters.alpha_ = 1e-4;%1.2*parameters.omega;
+parameters.beta_ =  0;%0.1/parameters.omega;
 
 % Optimization Parameters
 parameters.vol_frac = 0.49;
@@ -31,7 +31,7 @@ parameters.change_min = 1e-4;
 parameters.iter_max = 200;
 parameters.philter = "simple"; % "simple" for sensitivity, "density" for density
 parameters.neta = 0.9;
-parameters.objective_function = "compliance";
+parameters.objective_function = "mixed";
 %%%% Possible objective_function strings %%%%%
 % "compliance" - static compliance
 % "scaled compliance" - 1 to 100 compliance, scaled from the initial result
@@ -78,12 +78,12 @@ legend('Initial', 'Min W', 'Target Frequency')
 title('Active Input Power','FontWeight','bold','FontSize',20)
 xlabel('Frequency [Hz]','FontWeight','bold','FontSize',20)
 
-objective_function = 'eigenvalues';
-save('init.mat','-append','objective_function');
-eig_history = zeros(length(fobj),10);
-for i=1:length(fobj)
-eig_history(i,:) = f2(x_history(:,i))
-end
+% objective_function = 'eigenvalues';
+% save('init.mat','-append','objective_function');
+% eig_history = zeros(length(fobj),10);
+% for i=1:length(fobj)
+% eig_history(i,:) = f2(x_history(:,i))
+% end
 
 % 
 % figure(3)

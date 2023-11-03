@@ -1,5 +1,8 @@
 function FRF = CalculateFRF(frequency_array, t_val)
+tval = t_val;
 load('init_shell.mat')
+tval = (tmax-tmin)*tval/100 +tmin;
+t_val = apply_x_filter(filter_options,tval);
 Ks = shellStiffnessFromElements(Bke, Ske, lm, t_val, t_val, YOUNG, modo);
 M = shellMassFromElements(Me, lm, t_val, t_val, RHO, modo);
 C = alpha_*M +beta_*Ks;
@@ -16,6 +19,6 @@ for i=1:length(frequency_array)
     velocity = 1j*omega*u;
     FRF(i,1) = velocity'*velocity; % (V2 rms)
     FRF(i,2) = 0.5*omega*omega*real((u')*C*u); % Active Input Power
-    FRF(i,3) = real(F'*u); % Dynamic Stiffness
+    FRF(i,3) = abs(F'*u); % Dynamic Stiffness
 end
 end

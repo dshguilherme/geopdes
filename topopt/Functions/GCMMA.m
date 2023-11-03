@@ -53,15 +53,16 @@ function [xval, fobj, fres, x_history] = GCMMA(f1,f2,init_mat, filter_options)
         end
     end
     % End of inner iterations. Update values
-%     change = max(abs(xmma(:)-xval(:)))/norm(xval);
+    change = max(abs(xmma(:)-xval(:)));
 %     change = 100*abs((f0val-f0valnew)/f0val);
-    change = max(abs(xmma(:)-xval(:)))/parameters.thickness;
+%     change = max(abs(xmma(:)-xval(:)))/parameters.thickness;
     xold2 = xold1;
     xold1 = xval;
     xval = xmma;
     
     % Filter new value
     xPhys = apply_x_filter(filter_options, xmma);
+    xPhys = dfactor*xPhys +tmin;
     % Calculate function and restrictions
     [f0val, df0dx, fval, dfdx] = eval_objective_and_constraints(xval);
     
@@ -72,7 +73,7 @@ function [xval, fobj, fres, x_history] = GCMMA(f1,f2,init_mat, filter_options)
            
     % Output Stuff
         x_history(:,outit) = xval; x_plot = reshape(xPhys,nsub); fobj(outit) = f0val; fres(outit,:) = fval; 
-        fprintf(' Iteration: %3i | Objective: %1.2e | Mass: %4.1f kg | Restrictions: %2.2e | %2.2e | Change: %1.2e\n', ...
+        fprintf(' Iteration: %3i | Objective: %3.1f | Mass: %4.1f kg | Restrictions: %3.1f | %3.1f | Change: %1.2e\n', ...
       outit, f0val, RHO*sum(Ve.*xPhys), fval(1), fval(2), change);
     grafo = nrbplot(geometry.nurbs,nsub); colormap(jet); grafo.CData = x_plot; colorbar; drawnow; %imagesc(rot90(x_plot)); colorbar; caxis([0 100]); axis equal;axis off;drawnow;
     end

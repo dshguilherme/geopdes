@@ -32,7 +32,10 @@ Ve = (msh1.element_size.^2)'; % Element area
 F = op_f_v_tp (sp, msh, problem_data.f);
 F = Fmag*F/sum(F);
 
-
+tmax = max_thickness;
+tmin = min_thickness;
+factor = 100*(thickness-tmin)/(tmax -tmin);
+dfactor = (tmax-tmin)/100;
 %% Initialize MMA constants
 m = 2; % Number of Restrictions
 n = msh.nel; % Number of variables
@@ -41,11 +44,11 @@ eeen    = ones(n,1);
 eeem    = ones(m,1);
 zeron   = zeros(n,1);
 zerom   = zeros(m,1);
-xval    = thickness*eeen;
+xval    = factor*eeen;
 xold1   = xval;
 xold2   = xval;
-xmin    = min_thickness*eeen;
-xmax    = max_thickness*eeen;
+xmin    = 0*eeen;
+xmax    = 100*eeen;
 low     = xmin;
 upp     = xmax;
 c       = 10000*eeem;
@@ -80,22 +83,30 @@ filter_options.h = h;
 filter_options.Hs = Hs;
 filter_options.subshape = nsub;
 
-%% Objective Function
-Cs0 = 1;
-V0 = 1;
-aW0 = 1;
-tmp = objective_function;
-objective_function = "Initial";
+%% Initial Solution
+t = (tmax-tmin)*xval/100 +tmin;
+t = apply_x_filter(filter_options, t);
+Ks = shellStiffnessFromElements(Bke, Ske, lm, t, t, YOUNG, modo);
+M = shellMassFromElements(Me, lm, t, t, RHO, modo);
+C = alpha_*M +beta_*Ks;
+Kd = Ks +1j*omega*C -omega*omega*M;
+dr_values = zeros(length(dr_dofs),1);
+u = SolveDirichletSystem(Kd, F, dr_dofs, free_dofs, dr_values);
+us = SolveDirichletSystem(Ks, F, dr_dofs, free_dofs, dr_values);
+[vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),2,'sm');
+vals = diag(vals);
+%% Objective Functions
+Cs0 = F'*us;
+Cd0 = abs(F'*u);
+velocity0 = -1j*omega*u;
+V0 = velocity0'*velocity0;
+aW0 = real(0.5*omega*omega*u'*C*u);
+gap0 = vals(1)-vals(2);
+eig0 = -vals(1);
 
 f1 = @EvalShellObjectivesAndSensitivities;
 f2 = @EvalShellObjectives;
 
 %% Initial Functions
-save('init_shell.mat')
-[f0, ~] = f2(xval);
-Cs0 = f0(1);
-V0 = f0(2);
-aW0 = f0(3);
-objective_function = tmp;
 save('init_shell.mat');
 end

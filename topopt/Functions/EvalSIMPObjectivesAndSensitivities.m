@@ -18,16 +18,16 @@ us = SolveDirichletSystem(Ks,F,dr_dofs,free_dofs,dr_values);
 % us2 = SolveDirichletSystem(Ks2,F,dr_dofs,free_dofs,dr_values);
 
 %% Objective Functions and Constraints
-% Cs = F'*us; % Static Compliance
-Cs = LL'*us; % Static Compliance force inverter
+Cs = F'*us; % Static Compliance
+% Cs = LL'*us; % Static Compliance force inverter
 
 Cs_scaled = 100*Cs/Cs0; % Scaled Compliance
 Cs_db = 100 +10*log10(Cs); % dB Compliance
 Cs0_db = 100+10*log10(Cs0); % Cs0 dB
 Cs_db_scaled = 100*Cs_db/Cs0_db; % Scaled dB Compliance
 
-% aW = 0.5*omega*real(1j*F'*u); % Active Input Power
-aW = 0.5*omega*real(1j*LL'*u); % Active Input Power force inverter
+aW = 0.5*omega*real(1j*F'*u); % Active Input Power
+% aW = 0.5*omega*real(1j*LL'*u); % Active Input Power force inverter
 aW_db = 100 +10*log10(aW); % dB Active Input Power
 aW0_db = 100 +10*log10(aW0); % W0 dB
 aW_db_scaled = 100*aW_db/aW0_db; % Scaled dB Active Input Power
@@ -48,8 +48,8 @@ dcs = StiffnessSensitivities(-us, us, x, msh.nel, lm, Ke, YOUNG, YOUNG_MIN); % S
 % dm = MassSensitivities(lambda_,u, x, msh.nel, lm, Me, RHO, RHO_MIN);
 % dc = alpha_*dm +beta_*dk;
 % dkd = real(dk +1j*omega*dc -omega*omega*dm); % Active Input Power
-% lambda_ = -0.5*1j*omega*u; % cantilever beam
-lambda_ = Kd\(-0.5*1j*omega*LL); % force inverter
+lambda_ = -0.5*1j*omega*u; % cantilever beam
+% lambda_ = Kd\(-0.5*1j*omega*LL); % force inverter
 dkd = DynamicStiffnessSensitivities(lambda_, omega, u, x, msh.nel, lm, ...
     Ke, Me, YOUNG, YOUNG_MIN, RHO, RHO_MIN, alpha_, beta_);
 % dkd = fastDynamicStiffnessSensitivities(ke,me,lm,lambda_,u,omega,x,YOUNG,RHO,alpha_,beta_);

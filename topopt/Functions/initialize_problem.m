@@ -28,9 +28,9 @@ end
 tmp_msh = msh_precompute(msh);
 Ve = (tmp_msh.element_size.^2)';
 F = buildForce(sp, msh, problem_data);
-% F = 100000*F/sum(F);
-F = zeros(sp.ndof,1);
-LL = F;
+F = 100000*F/sum(F);
+% F = zeros(sp.ndof,1);
+% LL = F;
 
 m = 1; % Number of Restrictions
 n = msh.nel; % Number of variables
