@@ -1,18 +1,14 @@
-clearvars
-clc
-close all
-
-%% Initialization
-
-problem_data = square_shell_problem;
+function [parameters, problem_data] = shell_parameters(problem_handle, degree, nsub, freq, objective_function)
+problem_data = problem_handle;
+% problem_data = square_shell_problem;
 % problem_data = scordelis_problem;
 % problem_data = hemispherical_shell_problem(10, 10);
 % Mesh parameters
-parameters.degree = 2;
-parameters.nsub = [25 25];
+parameters.degree = degree;
+parameters.nsub = nsub;
 
 % Domain and Material properties
-parameters.freq = 183;
+parameters.freq = freq;
 parameters.omega = parameters.freq*2*pi;
 parameters.RHO = 2700;
 parameters.YOUNG = 69e12;
@@ -34,38 +30,7 @@ parameters.iter_max = 50;
 parameters.philter = "simple"; % 'simple' or 'density'
 parameters.modo = "Continuous"; % 'SIMP' or 'Continuous'
 parameters.neta = 0.9;
-parameters.objective_function = "v2_rms";
+parameters.objective_function = objective_function;
 % "compliance", "scaled compliance", "v2_rms", "v2_scaled", "v2_db",
 % "mixed", "History" or "Initial" as options for objective_function
-
-%% Solve for initial step
-initial_step_KL_shell(parameters, problem_data);
-load('init_shell.mat')
-
-%% Optimization
-figure(1)
-[xval, fobj, fres, x_history] = ...
-    GCMMA(f1, f2, 'init_shell.mat', filter_options);
-
-%% Plots
-
-% History plots
-objective_function = 'History';
-save('init_shell.mat', '-append', 'objective_function');
-
-% FRF Functions
-discretization = 1;
-final_frequency = 200;
-frequencies = linspace(0,final_frequency,(final_frequency)/discretization +1);
-x_init = factor*eeen;
-FRF_init = CalculateFRF(frequencies, x_init);
-FRF_final = CalculateFRF(frequencies, xval);
-
-% Plots
-figure(2)
-ystr = plotFRFs(parameters,frequencies,FRF_init,FRF_final);
-
-figure(3)
-plotObjectiveAndRestrictions(fobj,fres,ystr)
-
-
+end
