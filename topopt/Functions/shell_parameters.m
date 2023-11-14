@@ -10,12 +10,12 @@ parameters.nsub = nsub;
 % Domain and Material properties
 parameters.freq = freq;
 parameters.omega = parameters.freq*2*pi;
-parameters.RHO = 2700;
-parameters.YOUNG = 69e12;
+parameters.RHO = 0.01;
+parameters.YOUNG = 6.825e7;
 parameters.POISSON = 0.3;
 parameters.alpha_ = 1e-4;
 parameters.beta_ = 0; %0.1/parameters.omega;
-parameters.Fmag = 1e6; % Force magnitude
+parameters.Fmag = 1; % Force magnitude
 
 % Optimization parameters
 parameters.thickness = 0.1;

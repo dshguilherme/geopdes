@@ -8,11 +8,11 @@ srf = nrbtform(srf, vecroty(pi/2));
 
 problem_data.geo_name = srf;
 problem_data.drchlt_sides = [3];
-problem_data.drchlt_components = {[1 2 3]};
+problem_data.drchlt_components = {[3]};
 
 % Physical parameters
 E = 1;
-nu = 0.0;
+nu = 0.3;
 thickness = 1;
 density = 1;
 

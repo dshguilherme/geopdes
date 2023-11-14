@@ -15,7 +15,7 @@ for i=1:3
     for j=1:3
         for k=1:4
 [parameters, problem_data] = ...
-    shell_parameters(square_shell_problem, degree(i), nsub(j), freq(k), objective_function);
+    shell_parameters(square_shell_problem, degree(i), nsub{j}, freq(k), objective_function);
 
 %% Initial Step and Load
 initial_step_KL_shell(parameters, problem_data);

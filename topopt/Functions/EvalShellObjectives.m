@@ -29,7 +29,7 @@ Cd_scaled = 100*Cd/Cd0;
 
 % Quadratic Velocity
 velocity = -1j*omega*u;
-V2_rms = velocity'*velocity;
+V2_rms = real(velocity'*R0*velocity);
 V2_scaled = 100*V2_rms/V0;
 V_db = 100 +10*log10(V2_rms);
 V0_db = 100 +10*log10(V0);
