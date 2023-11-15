@@ -4,22 +4,22 @@ close all
 
 %% Initialization
 
-% problem_data = square_shell_problem;
+problem_data = square_shell_problem;
 % problem_data = scordelis_problem;
-problem_data = hemispherical_shell_problem(10, 10);
+% problem_data = hemispherical_shell_problem(10, 10);
 % Mesh parameters
 parameters.degree = 2;
-parameters.nsub = [50 50];
+parameters.nsub = [80 80];
 
 % Domain and Material properties
-parameters.freq = 60;
+parameters.freq = 15;
 parameters.omega = parameters.freq*2*pi;
-parameters.RHO = 0.01;
-parameters.YOUNG = 6.825e7;
+parameters.RHO = 2700;
+parameters.YOUNG = 69e12;
 parameters.POISSON = 0.3;
 parameters.alpha_ = 1e-4;
-parameters.beta_ = 0; %0.1/parameters.omega;
-parameters.Fmag = 1; % Force magnitude
+parameters.beta_ = 1e-8; %0.1/parameters.omega;
+parameters.Fmag = 1e6; % Force magnitude
 
 % Optimization parameters
 parameters.thickness = 0.1;
@@ -33,7 +33,7 @@ parameters.change_min = 1e-1;
 parameters.iter_max = 50;
 parameters.philter = "simple"; % 'simple' or 'density'
 parameters.modo = "Continuous"; % 'SIMP' or 'Continuous'
-parameters.neta = 0.7;
+parameters.neta = 0.9;
 parameters.objective_function = "v2_mix";
 % "compliance", "scaled compliance", "v2_rms", "v2_scaled", "v2_db",
 % "mixed", "History" or "Initial" as options for objective_function

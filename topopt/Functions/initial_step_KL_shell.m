@@ -125,7 +125,7 @@ for i=1:length(pts)
 end
 R0 = [R0; R0; R0;];
 R0 = diag(R0);
-R0 = diag(ones(size(u)));
+R0 = sparse(diag(ones(size(u))));
 V0 = velocity0'*R0*velocity0;
 
 f1 = @EvalShellObjectivesAndSensitivities;
