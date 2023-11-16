@@ -144,14 +144,14 @@ switch objective_function
         df0dx = tmp*tmp2*df0dx;
     case "AIP_mix"
         f0val = neta*aW_scaled +(1-neta)*Cs_scaled;
-        lhs = -0.5*1j*omega*conj(F);
-        ell = Kd\lhs;
+        lhs = -omega*omega*u'*C;
+        ell = Kd\lhs.';
         daw = CalculateSensivities(ell,u,lm,dkd);
         db_tax = 100*(10/(log(10)*aW))/aW0;
         daw = daw*db_tax;
         ell = -us;
         dcs = CalculateSensivities(ell,u,lm,dkd);
-        df0dx = 100*(neta*daw +(1-neta)*dcs/Cs0);
+        df0dx = neta*daw +100*((1-neta)*dcs/Cs0);
         
     case "eigengap"
         [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),2,'sm');
