@@ -111,7 +111,7 @@ switch objective_function
         f0val = aW_scaled;
         % Adjoint problem -> self-adjoint
 %         ell = -0.5*1j*omega*u;
-        lhs = -omega*omega*u'*C;
+        lhs = -0.5*omega*omega*u'*(C+C.');
         ell = Kd\lhs.';
         df0dx = CalculateSensivities(ell,u,lm,dkd);
         db_tax = 100*(10/(log(10)*aW))/aW0_db;
@@ -120,13 +120,13 @@ switch objective_function
         f0val = V2_scaled;
         % Adjoint problem
 %         lhs = -2*omega*omega*(u')*eye(length(u));
-        lhs = -2*omega*omega*(u')*R0;
+        lhs = -omega*omega*(u')*(R0+R0.');
         ell = Kd\lhs.';
         df0dx = CalculateSensivities(ell,u,lm,dkd);
         df0dx = 100*df0dx/V0;
     case "v2_mix"
         f0val = neta*V2_db +(1-neta)*Cs_scaled;
-        lhs = -2*omega*omega*(u')*eye(length(u));
+        lhs = -omega*omega*(u')*(R0+R0.');
         ell = Kd\lhs.';
         dv2 = CalculateSensivities(ell,u,lm,dkd);
         tmp2 = 10/(log(10)*V2_rms);
@@ -136,7 +136,7 @@ switch objective_function
     case "v2_db"
         f0val = V2_db;
 %         lhs = -2*omega*omega*(u')*eye(length(u));
-        lhs = -2*omega*omega*(u')*R0;
+        lhs = -omega*omega*(u')*(R0+R0.');
         ell = Kd\lhs.';
         df0dx = CalculateSensivities(ell,u,lm,dkd);
         tmp = 100/V0_db;
@@ -144,7 +144,7 @@ switch objective_function
         df0dx = tmp*tmp2*df0dx;
     case "AIP_mix"
         f0val = neta*aW_scaled +(1-neta)*Cs_scaled;
-        lhs = -omega*omega*u'*C;
+        lhs = -0.5*omega*omega*u'*(C+C.')
         ell = Kd\lhs.';
         daw = CalculateSensivities(ell,u,lm,dkd);
         db_tax = 100*(10/(log(10)*aW))/aW0;
