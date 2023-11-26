@@ -117,16 +117,16 @@ farref = [pi/2, exp(1)/2, 50];
 farref1 = [pi/2, 10*exp(1)/2, sqrt(50^2 -81*exp(1)*exp(1)/4)];
 pts = generatePoints(geometry);
 k = omega/320; % 320m/s = speed of sound in air k is the angular wavenumber
-R0 = zeros(length(pts),1);
+R0 = zeros(length(pts));
 const = omega*omega*sum(Ve)*1.204/(4*pi*320); %1.204 -> density of air
 for i=1:length(pts)
-    dist = norm(farref1 - pts(i,:));
-    R0(i) = const*sin(k*dist)/(k*dist);
+    P = pts(i,:);
+    dist = P-pts;
+    dist = vecnorm(dist')';
+    R0(i,:) = const*sin(k*dist)./(k*dist);
+    R0(i,i) = const*1;
 end
-R0 = [R0; R0; R0;];
-R0 = diag(R0);
-R0 = sparse(diag(ones(size(u))));
-V0 = velocity0'*R0*velocity0;
+V0 = real(velocity0'*blkdiag(R0,R0,R0)*velocity0);
 
 f1 = @EvalShellObjectivesAndSensitivities;
 f2 = @EvalShellObjectives;

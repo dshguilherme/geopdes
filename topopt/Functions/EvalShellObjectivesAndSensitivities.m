@@ -28,7 +28,8 @@ Cd_scaled = 100*Cd/Cd0;
 
 % Quadratic Velocity
 velocity = -1j*omega*u;
-V2_rms = real(velocity'*R0*velocity);
+bigR = blkdiag(R0,R0,R0);
+V2_rms = real(velocity'*bigR*velocity);
 V2_scaled = 100*V2_rms/V0;
 V_db = 100 +10*log10(V2_rms);
 V0_db = 100 +10*log10(V0);
@@ -120,7 +121,7 @@ switch objective_function
         f0val = V2_scaled;
         % Adjoint problem
 %         lhs = -2*omega*omega*(u')*eye(length(u));
-        lhs = -omega*omega*(u')*(R0+R0.');
+        lhs = -2*omega*omega*(u')*(bigR);
         ell = Kd\lhs.';
         df0dx = CalculateSensivities(ell,u,lm,dkd);
         df0dx = 100*df0dx/V0;
@@ -136,7 +137,7 @@ switch objective_function
     case "v2_db"
         f0val = V2_db;
 %         lhs = -2*omega*omega*(u')*eye(length(u));
-        lhs = -omega*omega*(u')*(R0+R0.');
+        lhs = -omega*omega*(u')*(bigR+bigR.');
         ell = Kd\lhs.';
         df0dx = CalculateSensivities(ell,u,lm,dkd);
         tmp = 100/V0_db;
@@ -144,7 +145,7 @@ switch objective_function
         df0dx = tmp*tmp2*df0dx;
     case "AIP_mix"
         f0val = neta*aW_scaled +(1-neta)*Cs_scaled;
-        lhs = -0.5*omega*omega*u'*(C+C.')
+        lhs = -0.5*omega*omega*u'*(C+C.');
         ell = Kd\lhs.';
         daw = CalculateSensivities(ell,u,lm,dkd);
         db_tax = 100*(10/(log(10)*aW))/aW0;
