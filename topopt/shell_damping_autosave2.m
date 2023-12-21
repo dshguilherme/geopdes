@@ -4,27 +4,28 @@ close all
 
 %% Initialization
 
-freqs = [1350];
-names = {'1350_big_R0'};
+freqs = [15 60 102 125 15 60 102 125 15 60 102 125];
+names = {'square_sensi_AIP_alpha_f15.mat','square_sensi_AIP_alpha_f60.mat', 'square_sensi_AIP_alpha_f102.mat', 'square_sensi_AIP_alpha_f125.mat', ...
+    'square_sensi_AIP_beta_f15.mat','square_sensi_AIP_beta_f60.mat', 'square_sensi_AIP_beta_f102.mat', 'square_sensi_AIP_beta_f125.mat', ...
+    'square_sensi_AIP_alphabeta_f15.mat','square_sensi_AIP_alphabeta_f60.mat', 'square_sensi_AIP_alphabeta_f102.mat', 'square_sensi_AIP_alphabeta_f125.mat'};
 for ell=1:length(freqs)
-% for ell=6:8
     problem_data = square_shell_problem;
     % problem_data = scordelis_problem;
-%     problem_data = hemispherical_shell_problem(10, 10);
+    % problem_data = hemispherical_shell_problem(10, 10);
     % Mesh parameters
     parameters.degree = 2;
-    parameters.nsub = [40 40];
+    parameters.nsub = [30 30];
 
     % Domain and Material properties
     parameters.freq = freqs(ell);
     parameters.omega = parameters.freq*2*pi;
     parameters.RHO = 2700;
-    parameters.YOUNG = 6.9e13;
+    parameters.YOUNG = 69e12;
     parameters.POISSON = 0.3;
-%     aalpha = [1.2*parameters.omega 1.2*parameters.omega 1.2*parameters.omega 1.2*parameters.omega 0 0 0 0 1.2*parameters.omega 1.2*parameters.omega 1.2*parameters.omega 1.2*parameters.omega];
-    parameters.alpha_ = 0; %1e-3;
-%     bbeta = [0 0 0 0 0.1/parameters.omega 0.1/parameters.omega 0.1/parameters.omega 0.1/parameters.omega 0.1/parameters.omega 0.1/parameters.omega 0.1/parameters.omega 0.1/parameters.omega];
-    parameters.beta_ = 0.1/parameters.omega;
+    aalpha = [1.2*parameters.omega 1.2*parameters.omega 1.2*parameters.omega 1.2*parameters.omega 0 0 0 0 1.2*parameters.omega 1.2*parameters.omega 1.2*parameters.omega 1.2*parameters.omega];
+    parameters.alpha_ = aalpha(ell);
+    bbeta = [0 0 0 0 0.1/parameters.omega 0.1/parameters.omega 0.1/parameters.omega 0.1/parameters.omega 0 0 0 0];
+    parameters.beta_ = bbeta(ell);
     parameters.Fmag = 1e6; % Force magnitude
 
     % Optimization parameters
@@ -40,13 +41,13 @@ for ell=1:length(freqs)
     parameters.philter = "simple"; % 'simple' or 'density'
     parameters.modo = "Continuous"; % 'SIMP' or 'Continuous'
     parameters.neta = 0.9;
-    parameters.objective_function = "v2_rms";
+    parameters.objective_function = "AIP";
     %% Solve for initial step
     initial_step_KL_shell(parameters, problem_data);
     load('init_shell.mat')
     %% Optimization
 [xval, fobj, fres, x_history] = ...
-    GCMMA(f1, f2, 'init_shell.mat', filter_options);
+    GCMMA_no_plot(f1, f2, 'init_shell.mat', filter_options);
 clearvars -except freqs ell names xval fobj fres x_history
 save(names{ell})
 end

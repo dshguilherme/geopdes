@@ -42,8 +42,8 @@ V2_db = 100*V_db/V0_db;
 aW = real(0.5*omega*omega*(u'*C*u));
 aW_db = 100 +10*log10(aW);
 aW0_db = 100 +10*log10(aW0);
-aW_scaled = 100*aW_db/aW0_db;
-% aW_scaled = 100*aW/aW0;
+% aW_scaled = 100*aW_db/aW0_db;
+aW_scaled = 100*aW/aW0;
 
 % Mass Restriction
 M_max = RHO*sum(Ve.*thickness)*(1+maximum_to_add); % Maximum added mass

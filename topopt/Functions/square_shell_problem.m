@@ -1,6 +1,6 @@
 function problem_data = square_shell_problem
-L1 = pi;
-L2 = exp(1);
+L1 = 15; %pi;
+L2 = 15; %exp(1);
 p11 = [0 0 1]; p12 = [L1 0 1]; p21 = [0 L2 1]; p22 = [L1 L2 1];
 problem_data.geo_name = nrb4surf (p11,p12,p21,p22);
 

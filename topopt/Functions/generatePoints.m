@@ -4,7 +4,7 @@ knots = nurbs.knots;
 u = cell(length(knots),1);
 for i=1:length(knots)
     n = length(knots{i}) -nurbs.order(i);
-    u{i} = unique(conv(knots{1},[0.5 0.5],'valid')); % Midpoints of knots to represent the fun max
+    u{i} = linspace(0,1,n); % Equally spaced n points
 end
 [u{1:1:end}] = ndgrid(u{1:1:end});
 nn = numel(u);

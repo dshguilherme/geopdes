@@ -1,4 +1,4 @@
-function initial_step_KL_shell(parameters, problem_data)
+function initial_step_KL_shell_multi(parameters, problem_data)
 data_names = fieldnames(parameters);
 for iopt  = 1:numel (data_names)
   eval ([data_names{iopt} '= parameters.(data_names{iopt});']);
@@ -11,7 +11,6 @@ method_data.nquad      = [degree+1 degree+1];     % Points for the Gaussian quad
 
 %% Build Spaces
 [geometry, msh, sp] = buildSpaces(problem_data,method_data);
-
 %% Pre-calculate element volume, stiffness, mass, force
 msh1 = msh_precompute(msh);
 sp1 = sp_precompute_param(sp,msh1, 'value', true,'gradient', true, 'hessian', true);
@@ -82,56 +81,41 @@ filter_options.type = philter;
 filter_options.h = h;
 filter_options.Hs = Hs;
 filter_options.subshape = nsub;
-
 %% Initial Solution
 t = (tmax-tmin)*xval/100 +tmin;
 t = apply_x_filter(filter_options, t);
 Ks = shellStiffnessFromElements(Bke, Ske, lm, t, t, YOUNG, modo);
 M = shellMassFromElements(Me, lm, t, t, RHO, modo);
-C = alpha_*M +beta_*Ks;
-Kd = Ks +1j*omega*C -omega*omega*M;
-dr_values = zeros(length(dr_dofs),1);
-u = SolveDirichletSystem(Kd, F, dr_dofs, free_dofs, dr_values);
-us = SolveDirichletSystem(Ks, F, dr_dofs, free_dofs, dr_values);
-[vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),2,'sm');
-vals = diag(vals);
+C =  @(omega) alpha_(omega)*M +beta_(omega)*Ks;
+Kd = @(omega) Ks +1j*omega*C(omega) -omega*omega*M;
+dr_values = zeros(length(dr_dofs),1); 
+u = cell(size(freq));
+velocity0 = u;
+for i=1:length(u)
+    u{i} = SolveDirichletSystem(Kd(omega(i)), F, dr_dofs, free_dofs, dr_values);
+    velocity0{i} = -1j*omega(i)*u{i};
+end
 %% Objective Functions
-Cs0 = F'*us;
-Cd0 = abs(F'*u);
-velocity0 = -1j*omega*u;
-
-aW0 = real(0.5*omega*omega*u'*C*u);
-gap0 = vals(1)-vals(2);
-eig0 = -vals(1);
-
-% Radiation resistance matrix
-% element_coordinates = elementCoordinates(problem_data,method_data);
-% eleX = element_coordinates{1};
-% eleY = element_coordinates{2};
-% eleZ = element_coordinates{3};
-% eleCoord = [eleX(:),eleY(:),eleZ(:)];
-ref = [pi/2, exp(1)/2, 0.640];
-nref1 = [pi/2, 1.59*exp(1)/2, 0.1];
-nref2 = [ 1.2825*pi/2 , exp(1)/2, 0.1];
-farref = [pi/2, exp(1)/2, 50];
-farref1 = [pi/2, 10*exp(1)/2, sqrt(50^2 -81*exp(1)*exp(1)/4)];
 pts = generatePoints(geometry);
-k = omega/320; % 320m/s = speed of sound in air k is the angular wavenumber
+R = cell(3,1);
+V0 = zeros(3,1);
+for i=1:3
 R0 = zeros(length(pts));
-const = omega*omega*sum(Ve)*1.204/(4*pi*320); %1.204 -> density of air
-for i=1:length(pts)
-    P = pts(i,:);
+k = omega(i)/320; % 320m/s = speed of sound in air k is the angular wavenumber
+const = omega(i)*omega(i)*sum(Ve)*1.204/(4*pi*320); %1.204 -> density of air
+for j=1:length(pts)
+    P = pts(j,:);
     dist = P-pts;
     dist = vecnorm(dist')';
-    R0(i,:) = const*sin(k*dist)./(k*dist);
-    R0(i,i) = const*1;
+    R0(j,:) = const*sin(k*dist)./(k*dist);
+    R0(j,j) = const*1;
 end
-% R0 = sparse(eye(length(u)/3)); % point source
-V0 = real(velocity0'*blkdiag(R0,R0,R0)*velocity0);
+R{i} = R0;
+V0(i) = real(velocity0{i}'*blkdiag(R{i},R{i},R{i})*velocity0{i});
+end
 
-f1 = @EvalShellObjectivesAndSensitivities;
-f2 = @EvalShellObjectives;
-
+f1 = @EvalMultiShellObjectivesAndSensitivities;
+f2 = @EvalMultiShellObjectives;
 %% Initial Functions
-save('init_shell.mat');
+save('init_shell_multi.mat');
 end

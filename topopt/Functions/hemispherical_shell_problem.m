@@ -24,7 +24,7 @@ problem_data.density = density;
 % Source and boundary terms
 hx = @(x, y, z) zeros(size(x));
 hy = @(x, y, z) zeros(size(x));
-hz = @(x, y, z) -90*ones(size(x));
+hz = @(x, y, z) -1*ones(size(x));
 
 problem_data.f       = @(x, y, z, ind) cat(1, ...
     reshape (hx (x,y,z), [1, size(x)]), ...

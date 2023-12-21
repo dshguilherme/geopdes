@@ -41,7 +41,7 @@ V2_db = 100*V_db/V0_db;
 aW = real(0.5*omega*omega*(u'*C*u));
 aW_db = 100 +10*log10(aW);
 aW0_db = 100 +10*log10(aW0);
-aW_scaled = 100*aW_db/aW0_db;
+aW_scaled = 100*aW/aW0;
 
 % Mass Restriction
 M_max = RHO*sum(Ve.*thickness)*(1+maximum_to_add); % Maximum added mass
@@ -115,8 +115,8 @@ switch objective_function
         lhs = -0.5*omega*omega*u'*(C+C.');
         ell = Kd\lhs.';
         df0dx = CalculateSensivities(ell,u,lm,dkd);
-        db_tax = 100*(10/(log(10)*aW))/aW0_db;
-        df0dx = df0dx*db_tax;
+%         db_tax = 100*(10/(log(10)*aW))/aW0_db;
+        df0dx = 100*df0dx/aW0;
     case "v2_rms"
         f0val = V2_scaled;
         % Adjoint problem
@@ -176,6 +176,7 @@ switch objective_function
         de1 = -(dk -vals(1)*dm);
         df0dx = CalculateSensivities(u1,u1,lm,de1);
 end
-df0dx = df0dx*dfactor;
 dfdx = [dh1dt; dh2dt]; 
+[df0dx, dfdx] = apply_sensi_filter(filter_options, t, df0dx, dfdx);
+df0dx = df0dx*dfactor;
 end
