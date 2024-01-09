@@ -9,10 +9,10 @@ problem_data = square_shell_problem;
 % problem_data = hemispherical_shell_problem(10, 10);
 % Mesh parameters
 parameters.degree = 2;
-parameters.nsub = [40 40];
+parameters.nsub = [60 60];
 
 % Domain and Material properties
-parameters.freq = 875;
+parameters.freq = 500;
 parameters.omega = parameters.freq*2*pi;
 parameters.RHO = 2700;
 parameters.YOUNG = 6.9e13;
@@ -31,7 +31,7 @@ parameters.maximum_to_take = .05;
 parameters.rmin = 4;
 parameters.change_min = 1e-1;
 parameters.iter_max = 400;
-parameters.philter = "simple"; % 'simple' or 'density'
+parameters.philter = "none"; % 'none', 'simple' or 'density'
 parameters.modo = "Continuous"; % 'SIMP' or 'Continuous'
 parameters.neta = 0.9;
 parameters.objective_function = "v2_rms";

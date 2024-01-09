@@ -13,5 +13,6 @@ switch filter_options.type
         df0dx = df0dx(:);
         dfdx = conv2(reshape(dfdx,shape)./Hs,h,'same');
         dfdx = dfdx(:)';
+    case "none"
 end
 end

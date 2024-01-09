@@ -9,5 +9,7 @@ switch filter_options.type
     case "density"
         xPhys = conv2(reshape(x,shape),h,'same')./Hs;
         xPhys = xPhys(:);
+    case "none"
+        xPhys = x;
 end
 end
