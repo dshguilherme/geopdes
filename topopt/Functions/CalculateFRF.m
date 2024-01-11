@@ -11,6 +11,7 @@ C = alpha_*M +beta_*Ks;
 
 FRF = zeros(numel(frequency_array),4);
 u = zeros(sp.ndof,1);
+bigR = blkdiag(R0,R0,R0);
 for i=1:length(frequency_array)
     f = frequency_array(i);
     omega = 2*pi*f;
@@ -22,6 +23,6 @@ for i=1:length(frequency_array)
     FRF(i,1) = velocity'*velocity; % (V2 rms)
     FRF(i,2) = 0.5*omega*omega*real((u')*C*u); % Active Input Power
     FRF(i,3) = abs(F'*u); % Dynamic Stiffness
-    FRF(i,4) = velocity'*blkdiag(R0,R0,R0)*velocity;
+    FRF(i,4) = velocity'*bigR*velocity;
 end
 end

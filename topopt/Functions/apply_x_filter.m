@@ -5,7 +5,6 @@ shape = filter_options.subshape;
 switch filter_options.type
     case "simple"
       xPhys = x;
-        
     case "density"
         xPhys = conv2(reshape(x,shape),h,'same')./Hs;
         xPhys = xPhys(:);
