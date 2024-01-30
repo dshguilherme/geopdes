@@ -12,7 +12,7 @@ parameters.degree = 2;
 parameters.nsub = [30 30];
 
 % Domain and Material properties
-parameters.freq = 50;
+parameters.freq = 1;
 parameters.omega = parameters.freq*2*pi;
 parameters.RHO = 2700;
 parameters.YOUNG = 6.9e13;
@@ -30,11 +30,11 @@ parameters.maximum_to_take = .05;
 
 parameters.rmin = 4;
 parameters.change_min = 1e-1;
-parameters.iter_max = 400;
+parameters.iter_max = 44;
 parameters.philter = "none"; % 'none', 'simple' or 'density'
 parameters.modo = "Continuous"; % 'SIMP' or 'Continuous'
 parameters.neta = 0.9;
-parameters.objective_function = "v2_rms";
+parameters.objective_function = "v2_db";
 % "compliance", "scaled compliance", "v2_rms", "v2_scaled", "v2_db",
 % "mixed", "History" or "Initial" as options for objective_function
 
@@ -48,8 +48,8 @@ figure(1)
     GCMMA(f1, f2, 'init_shell.mat', filter_options);
 
 %% Modal Extraction
-eigen_amount = 200;
-frequencies = 1:5:1000;
+eigen_amount = 10;
+frequencies = 1:5:100;
 
 % Reconstruct Ks and M from xval
 tval = (tmax-tmin)*xval/100 +tmin;

@@ -28,8 +28,9 @@ Cd_scaled = 100*Cd/Cd0;
 
 % Quadratic Velocity
 velocity = -1j*omega*u;
-bigR = blkdiag(R0,R0,R0);
-V2_rms = real(velocity'*bigR*velocity);
+% bigR = blkdiag(R0,R0,R0);
+% V2_rms = real(velocity'*bigR*velocity);
+V2_rms = real(velocity'*velocity);
 V2_scaled = 100*V2_rms/V0;
 V_db = 100 +10*log10(V2_rms);
 V0_db = 100 +10*log10(V0);
@@ -136,8 +137,8 @@ switch objective_function
         df0dx = 100*(neta*dv2*tmp2/V0_db +(1-neta)*dcs/Cs0);
     case "v2_db"
         f0val = V2_db;
-%         lhs = -2*omega*omega*(u')*eye(length(u));
-        lhs = -omega*omega*(u')*(bigR+bigR.');
+        lhs = -2*omega*omega*(u');
+%         lhs = -omega*omega*(u')*(bigR+bigR.');
         ell = Kd\lhs.';
         df0dx = CalculateSensivities(ell,u,lm,dkd);
         tmp = 100/V0_db;

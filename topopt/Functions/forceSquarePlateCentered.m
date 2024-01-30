@@ -1,6 +1,6 @@
 function hz = forceSquarePlateCentered(x,y,z)
-L1 = 15; %pi;
-L2 = 15; %exp(1);
+L1 = 1; %pi;
+L2 = 1; %exp(1);
 
 d1 = L1/20;
 d2 = L2/20;
