@@ -8,7 +8,7 @@ function K = shellStiffnessFromElements(Bke, Ske, lm, x, thickness, YOUNG, modo)
         case "Continuous"
             E = YOUNG*ones(size(thickness));
     end
-    for i=1:sz1
+   for i=1:sz1
         t = thickness(i);
         Ke = (t^3)*Bke(i,:) +t*Ske(i,:);
         Ke = E(i)*Ke;

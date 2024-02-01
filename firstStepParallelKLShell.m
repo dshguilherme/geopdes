@@ -18,9 +18,12 @@ for idim = 1:msh1.rdim
       x{idim} = reshape (msh1.geo_map(idim,:,:), msh1.nqn, msh1.nel);
 end
 % Stiffness Matrix
-[Bke, Ske, ~] = op_KL_shells_elements(sp1,sp1,msh1,problem_data.E_coeff(x{:}), problem_data.nu_coeff(x{:}));
+[Bke, Ske] = op_KL_shells_elements(sp1,sp1,msh1,problem_data.E_coeff(x{:}), problem_data.nu_coeff(x{:}));
+Bke = gpuArray(Bke);
+Ske = gpuArray(Ske);
 % Mass Matrix
 Me = op_u_v_elements(sp1, sp1, msh1, RHO);
+Me = gpuArray(Me);
 % Location matrix (connectivity)
 lm = sp1.connectivity';
 
@@ -30,6 +33,7 @@ Ve = (msh1.element_size.^2)'; % Element area
 % Force vector
 F = op_f_v_tp (sp, msh, problem_data.f);
 F = Fmag*F/sum(F);
+F = gpuArray(F);
 
 tmax = max_thickness;
 tmin = min_thickness;
@@ -83,13 +87,14 @@ filter_options.subshape = nsub;
 %% Initial Solution
 t = (tmax-tmin)*xval/100 +tmin;
 t = apply_x_filter(filter_options, t);
+t = gpuArray(t);
 Ks = shellStiffnessFromElements(Bke, Ske, lm, t, t, YOUNG, modo);
 M = shellMassFromElements(Me, lm, t, t, RHO, modo);
 C = alpha_*M +beta_*Ks;
 Kd = Ks +1j*omega*C -omega*omega*M;
 dr_values = zeros(length(dr_dofs),1);
 u = SolveDirichletSystem(Kd, F, dr_dofs, free_dofs, dr_values);
-us = SolveDirichletSystem(Ks, F, dr_dofs, free_dofs, dr_values);
+% us = SolveDirichletSystem(Ks, F, dr_dofs, free_dofs, dr_values);
 % [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),2,'sm');
 % vals = diag(vals);
 %% Objective Functions
@@ -98,26 +103,26 @@ Cd0 = abs(F'*u);
 velocity0 = -1j*omega*u;
 
 aW0 = real(0.5*omega*omega*u'*C*u);
-gap0 = vals(1)-vals(2);
-eig0 = -vals(1);
-pts = generatePoints(geometry);
-k = omega/320; % 320m/s = speed of sound in air k is the angular wavenumber
-R0 = zeros(length(pts));
-const = omega*omega*sum(Ve)*1.204/(4*pi*320); %1.204 -> density of air
-for i=1:length(pts)
-    P = pts(i,:);
-    dist = P-pts;
-    dist = vecnorm(dist')';
-    R0(i,:) = const*sin(k*dist)./(k*dist);
-    R0(i,i) = const*1;
-end
-R0 = sparse(R0);
-R0 = sparse(blkdiag(R0,R0,R0));
+% % gap0 = vals(1)-vals(2);
+% % eig0 = -vals(1);
+% pts = generatePoints(geometry);
+% k = omega/320; % 320m/s = speed of sound in air k is the angular wavenumber
+% R0 = zeros(length(pts));
+% const = omega*omega*sum(Ve)*1.204/(4*pi*320); %1.204 -> density of air
+% for i=1:length(pts)
+%     P = pts(i,:);
+%     dist = P-pts;
+%     dist = vecnorm(dist')';
+%     R0(i,:) = const*sin(k*dist)./(k*dist);
+%     R0(i,i) = const*1;
+% end
+% R0 = sparse(R0);
+% R0 = sparse(blkdiag(R0,R0,R0));
 % V0 = real(velocity0'*R0*velocity0);
 V0 = real(velocity0'*velocity0);
 
-f1 = @fastEvalShellObjectivesAndSensitivities;
-f2 = @fastEvalShellObjectives;
+f1 = @parallelEvalShellObjectivesAndSensitivities;
+f2 = @parallelEvalShellObjectives;
 
 s = whos;
 initial_output = cell2struct({s.name}.',{s.name});
