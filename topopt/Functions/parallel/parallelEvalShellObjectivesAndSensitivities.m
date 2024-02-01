@@ -4,12 +4,13 @@ function [f0val, df0dx, fval, dfdx] = parallelEvalShellObjectivesAndSensitivitie
 tval = (io.tmax-io.tmin)*xval/100 +io.tmin;
 % Apply the appropriate filtering
 t = apply_x_filter(io.filter_options,tval);
-t = gpuArray(t);
+
 
 %% Assembly
 % Build Stiffness and Mass from elementary values
-Ks = shellStiffnessFromElements(io.Bke, io.Ske, io.lm, t,t, io.YOUNG, io.modo);
-M = shellMassFromElements(io.Me, io.lm, t, t, io.RHO, io.modo);
+% Ks = shellStiffnessFromElements(io.Bke, io.Ske, io.lm, t,t, io.YOUNG, io.modo);
+% M = shellMassFromElements(io.Me, io.lm, t, t, io.RHO, io.modo);
+[Ks, M] = shellMatricesFromElements(io.Bke, io.Ske, io.Me, io.lm, t, io.YOUNG, io.RHO);
 % Rayleigh damping matrix
 C = io.alpha_*M +io.beta_*Ks;
 

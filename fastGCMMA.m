@@ -85,7 +85,7 @@ function [xval, fobj, fres, x_history] = fastGCMMA(io)
         x_history(:,outit) = xval; x_plot = reshape(xPhys,io.nsub); fobj(outit) = f0val; fres(outit,:) = fval; 
         fprintf(' Iteration: %3i | Objective: %3.1f | Mass: %4.1f kg | Restrictions: %3.1f | %3.1f | Change: %1.2e\n', ...
       outit, f0val, io.RHO*sum(io.Ve.*xPhys), fval(1), fval(2), change);
-    grafo = nrbplot(io.geometry.nurbs,io.nsub); colormap(jet); grafo.CData = x_plot; colorbar; caxis([io.tmin io.tmax]); drawnow; %imagesc(rot90(x_plot)); colorbar; caxis([0 100]); axis equal;axis off;drawnow;
+    grafo = nrbplot(io.geometry.nurbs,io.nsub); view(0,90); colormap(jet); grafo.CData = x_plot; colorbar; caxis([io.tmin io.tmax]); drawnow; %imagesc(rot90(x_plot)); colorbar; caxis([0 100]); axis equal;axis off;drawnow;
     end
     fobj = fobj(1:outit); fres = fres(1:outit,:); x_history = x_history(:,1:outit);
 end

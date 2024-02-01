@@ -9,7 +9,7 @@ problem_data = square_shell_problem;
 
 % Mesh parameters
 parameters.degree = 2;
-parameters.nsub = [30 30];
+parameters.nsub = [60 60];
 
 % Domain and Material properties
 parameters.freq = 500;
@@ -30,7 +30,7 @@ parameters.maximum_to_take = .05;
 
 parameters.rmin = 1;
 parameters.change_min = 1e-1;
-parameters.iter_max = 200;
+parameters.iter_max = 1;
 parameters.philter = "simple"; % 'none', 'simple' or 'density'
 parameters.modo = "Continuous"; % 'SIMP' or 'Continuous'
 parameters.neta = 0.9;
@@ -51,7 +51,7 @@ tmin = io.tmin;
 tval = (tmax-tmin)*xval/100 +tmin;
 t = apply_x_filter(io.filter_options,tval);
 t_init = parameters.thickness*ones(size(t));
-
+tic
 Ks = shellStiffnessFromElements(io.Bke, io.Ske, io.lm, t, t, parameters.YOUNG, parameters.modo);
 Ksi = shellStiffnessFromElements(io.Bke, io.Ske, io.lm, t_init, t_init, parameters.YOUNG, parameters.modo);
 M = shellMassFromElements(io.Me, io.lm, t, t, parameters.RHO, parameters.modo);

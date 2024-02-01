@@ -83,8 +83,13 @@ filter_options.subshape = nsub;
 %% Initial Solution
 t = (tmax-tmin)*xval/100 +tmin;
 t = apply_x_filter(filter_options, t);
+tic
+Ks = shellStiffnessFromElements_parallel(Bke, Ske, lm, t, YOUNG);
+toc
+tic
 Ks = shellStiffnessFromElements(Bke, Ske, lm, t, t, YOUNG, modo);
-M = shellMassFromElements(Me, lm, t, t, RHO, modo);
+toc
+M = shellMassFromElements_parallel(Me, lm, t, RHO);
 C = alpha_*M +beta_*Ks;
 Kd = Ks +1j*omega*C -omega*omega*M;
 dr_values = zeros(length(dr_dofs),1);

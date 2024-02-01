@@ -9,7 +9,7 @@ problem_data = square_shell_problem;
 
 % Mesh parameters
 parameters.degree = 2;
-parameters.nsub = [30 30];
+parameters.nsub = [134 134];
 
 % Domain and Material properties
 parameters.freq = 500;
@@ -30,7 +30,7 @@ parameters.maximum_to_take = .05;
 
 parameters.rmin = 1;
 parameters.change_min = 1e-1;
-parameters.iter_max = 200;
+parameters.iter_max = 10;
 parameters.philter = "simple"; % 'none', 'simple' or 'density'
 parameters.modo = "Continuous"; % 'SIMP' or 'Continuous'
 parameters.neta = 0.9;
@@ -43,40 +43,39 @@ figure(1)
 [xval, fobj, fres, x_history] = fastGCMMA(io);
 
 %% FRF
-frequencies = 1:1:1000;
-tmax = io.tmax;
-tmin = io.tmin;
-tval = (tmax-tmin)*xval/100 +tmin;
-t = apply_x_filter(io.filter_options,tval);
-t = gpuArray(t);
-t_init = parameters.thickness*ones(size(t));
-
-Ks = shellStiffnessFromElements(io.Bke, io.Ske, io.lm, t, t, parameters.YOUNG, parameters.modo);
-Ksi = shellStiffnessFromElements(io.Bke, io.Ske, io.lm, t_init, t_init, parameters.YOUNG, parameters.modo);
-M = shellMassFromElements(io.Me, io.lm, t, t, parameters.RHO, parameters.modo);
-Mi = shellMassFromElements(io.Me, io.lm, t_init, t_init, parameters.RHO, parameters.modo);
-
-aalpha = 1e-7;
-bbeta = 1e-8;
-C = aalpha*M +bbeta*Ks;
-Ci = aalpha*Mi +bbeta*Ksi;
-for i=1:length(frequencies)
-    omega = 2*pi*frequencies(i);
-    Kd = Ks -omega*omega*M +1j*omega*C;
-    Kdi = Ksi -omega*omega*Mi +1j*omega*Ci;
-    u = SolveDirichletSystem(Kd, io.F, io.dr_dofs, io.free_dofs, io.dr_values);
-    ui = SolveDirichletSystem(Kdi, io.F, io.dr_dofs, io.free_dofs, io.dr_values);
-    velocity = -1j*omega*u;
-    veli = -1j*omega*ui;
-    v2rms(i) = real(velocity'*io.R0*velocity);
-    v2rmsi(i) = real(veli'*io.R0*veli);
-end
-
-
-figure(2)
-semilogy(frequencies,v2rms)
-hold on
-semilogy(frequencies,v2rmsi)
-xline(parameters.freq,'-k','Optimization Frequency');
-legend('Optimized shell','Initial shell')
+% frequencies = 1:1:1000;
+% tmax = io.tmax;
+% tmin = io.tmin;
+% tval = (tmax-tmin)*xval/100 +tmin;
+% t = apply_x_filter(io.filter_options,tval);
+% t_init = parameters.thickness*ones(size(t));
+% 
+% Ks = shellStiffnessFromElements(io.Bke, io.Ske, io.lm, t, t, parameters.YOUNG, parameters.modo);
+% Ksi = shellStiffnessFromElements(io.Bke, io.Ske, io.lm, t_init, t_init, parameters.YOUNG, parameters.modo);
+% M = shellMassFromElements(io.Me, io.lm, t, t, parameters.RHO, parameters.modo);
+% Mi = shellMassFromElements(io.Me, io.lm, t_init, t_init, parameters.RHO, parameters.modo);
+% 
+% aalpha = 1e-7;
+% bbeta = 1e-8;
+% C = aalpha*M +bbeta*Ks;
+% Ci = aalpha*Mi +bbeta*Ksi;
+% for i=1:length(frequencies)
+%     omega = 2*pi*frequencies(i);
+%     Kd = Ks -omega*omega*M +1j*omega*C;
+%     Kdi = Ksi -omega*omega*Mi +1j*omega*Ci;
+%     u = SolveDirichletSystem(Kd, io.F, io.dr_dofs, io.free_dofs, io.dr_values);
+%     ui = SolveDirichletSystem(Kdi, io.F, io.dr_dofs, io.free_dofs, io.dr_values);
+%     velocity = -1j*omega*u;
+%     veli = -1j*omega*ui;
+%     v2rms(i) = real(velocity'*io.R0*velocity);
+%     v2rmsi(i) = real(veli'*io.R0*veli);
+% end
+% 
+% 
+% figure(2)
+% semilogy(frequencies,v2rms)
+% hold on
+% semilogy(frequencies,v2rmsi)
+% xline(parameters.freq,'-k','Optimization Frequency');
+% legend('Optimized shell','Initial shell')
 

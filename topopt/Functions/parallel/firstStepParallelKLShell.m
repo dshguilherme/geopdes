@@ -19,11 +19,8 @@ for idim = 1:msh1.rdim
 end
 % Stiffness Matrix
 [Bke, Ske] = op_KL_shells_elements(sp1,sp1,msh1,problem_data.E_coeff(x{:}), problem_data.nu_coeff(x{:}));
-Bke = gpuArray(Bke);
-Ske = gpuArray(Ske);
 % Mass Matrix
 Me = op_u_v_elements(sp1, sp1, msh1, RHO);
-Me = gpuArray(Me);
 % Location matrix (connectivity)
 lm = sp1.connectivity';
 
@@ -33,7 +30,6 @@ Ve = (msh1.element_size.^2)'; % Element area
 % Force vector
 F = op_f_v_tp (sp, msh, problem_data.f);
 F = Fmag*F/sum(F);
-F = gpuArray(F);
 
 tmax = max_thickness;
 tmin = min_thickness;
@@ -87,9 +83,11 @@ filter_options.subshape = nsub;
 %% Initial Solution
 t = (tmax-tmin)*xval/100 +tmin;
 t = apply_x_filter(filter_options, t);
-t = gpuArray(t);
-Ks = shellStiffnessFromElements(Bke, Ske, lm, t, t, YOUNG, modo);
-M = shellMassFromElements(Me, lm, t, t, RHO, modo);
+% tic
+% Ks = shellStiffnessFromElements_parallel(Bke, Ske, lm, t, YOUNG);
+% M = shellMassFromElements_parallel(Me, lm, t, RHO);
+% toc
+[Ks, M] = shellMatricesFromElements(Bke, Ske, Me, lm, t, YOUNG, RHO);
 C = alpha_*M +beta_*Ks;
 Kd = Ks +1j*omega*C -omega*omega*M;
 dr_values = zeros(length(dr_dofs),1);
@@ -98,7 +96,7 @@ u = SolveDirichletSystem(Kd, F, dr_dofs, free_dofs, dr_values);
 % [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),2,'sm');
 % vals = diag(vals);
 %% Objective Functions
-Cs0 = F'*us;
+
 Cd0 = abs(F'*u);
 velocity0 = -1j*omega*u;
 
