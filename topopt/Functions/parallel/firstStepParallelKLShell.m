@@ -83,24 +83,21 @@ filter_options.subshape = nsub;
 %% Initial Solution
 t = (tmax-tmin)*xval/100 +tmin;
 t = apply_x_filter(filter_options, t);
-% tic
-% Ks = shellStiffnessFromElements_parallel(Bke, Ske, lm, t, YOUNG);
-% M = shellMassFromElements_parallel(Me, lm, t, RHO);
-% toc
 [Ks, M] = shellMatricesFromElements(Bke, Ske, Me, lm, t, YOUNG, RHO);
-C = alpha_*M +beta_*Ks;
-Kd = Ks +1j*omega*C -omega*omega*M;
+
+
+u_init = cell(nfreq,2);
+for i=1:nfreq
+C = alpha_(i)*M +beta_(i)*Ks;
+Kd = Ks +1j*omega(i)*C -omega(i)*omega(i)*M;
 dr_values = zeros(length(dr_dofs),1);
-u = SolveDirichletSystem(Kd, F, dr_dofs, free_dofs, dr_values);
+u_init{i,1} = SolveDirichletSystem(Kd, F, dr_dofs, free_dofs, dr_values);
 % us = SolveDirichletSystem(Ks, F, dr_dofs, free_dofs, dr_values);
 % [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),2,'sm');
 % vals = diag(vals);
 %% Objective Functions
 
-Cd0 = abs(F'*u);
-velocity0 = -1j*omega*u;
-
-aW0 = real(0.5*omega*omega*u'*C*u);
+velocity0 = -1j*omega(i)*u_init{i,1};
 % % gap0 = vals(1)-vals(2);
 % % eig0 = -vals(1);
 % pts = generatePoints(geometry);
@@ -117,7 +114,8 @@ aW0 = real(0.5*omega*omega*u'*C*u);
 % R0 = sparse(R0);
 % R0 = sparse(blkdiag(R0,R0,R0));
 % V0 = real(velocity0'*R0*velocity0);
-V0 = real(velocity0'*velocity0);
+u_init{i,2} = real(velocity0'*velocity0);
+end
 
 f1 = @parallelEvalShellObjectivesAndSensitivities;
 f2 = @parallelEvalShellObjectives;

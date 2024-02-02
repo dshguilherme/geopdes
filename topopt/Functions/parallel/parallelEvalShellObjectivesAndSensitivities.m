@@ -5,6 +5,13 @@ tval = (io.tmax-io.tmin)*xval/100 +io.tmin;
 % Apply the appropriate filtering
 t = apply_x_filter(io.filter_options,tval);
 
+%% Sensitivities
+nel_dof = size(io.lm,2);
+
+dk = io.YOUNG*(io.Ske +3*t.*t.*io.Bke);
+dk = reshape(dk, io.msh.nel, nel_dof, nel_dof);
+dm = io.RHO.*io.Me;
+dm = reshape(dm, io.msh.nel, nel_dof, nel_dof);
 
 %% Assembly
 % Build Stiffness and Mass from elementary values
@@ -12,67 +19,54 @@ t = apply_x_filter(io.filter_options,tval);
 % M = shellMassFromElements(io.Me, io.lm, t, t, io.RHO, io.modo);
 [Ks, M] = shellMatricesFromElements(io.Bke, io.Ske, io.Me, io.lm, t, io.YOUNG, io.RHO);
 % Rayleigh damping matrix
-C = io.alpha_*M +io.beta_*Ks;
-
 % Dynamic stiffness
-Kd = Ks +1j*io.omega*C -io.omega*io.omega*M;
+u = cell(io.nfreq,1);
+f0val = 0;
+df0dx = zeros(size(t));
+for i=1:io.nfreq
+C = io.alpha_(i)*M +io.beta_(i)*Ks;
+Kd = Ks +1j*io.omega(i)*C -io.omega(i)*io.omega(i)*M;
 
 %% Solve problems
 dr_values = zeros(length(io.dr_dofs),1);
-u = SolveDirichletSystem(Kd, io.F, io.dr_dofs, io.free_dofs, dr_values);
+u{i} = SolveDirichletSystem(Kd, io.F, io.dr_dofs, io.free_dofs, dr_values);
 
 %% Objective Function
-
-velocity = -1j*io.omega*u;
+velocity = -1j*io.omega(i)*u{i};
 % V2_rms = real(velocity'*io.R0*velocity);
 V2_rms = real(velocity'*velocity);
-V2_scaled = 100*V2_rms/io.V0;
+V0 = io.u_init{i,2};
+V2_scaled = 100*V2_rms/V0;
 V_db = 100 +10*log10(V2_rms);
-V0_db = 100+10*log10(io.V0);
+V0_db = 100+10*log10(V0);
 V2_db = 100*V_db/V0_db;
 
-
+% Chain Rules
+f0val = f0val + V2_db/io.nfreq;
+% Adjoint problem
+% lhs = -2*io.omega*io.omega*(u')*io.R0;
+lhs = -2*io.omega(i)*io.omega(i)*(u{i}');
+ell = Kd\lhs.';
+dc = io.alpha_(i)*dm +io.beta_(i)*dk;
+dkd = dk +1j*io.omega(i)*dc -io.omega(i)*io.omega(i)*dm;
+dfdx = CalculateSensivities(ell,u{i},io.lm,dkd);
+tmp = 100/V0_db;
+tmp2 = 10/(log(10)*V2_rms);
+dfdx = tmp*tmp2*dfdx;
+df0dx = df0dx +dfdx/3;
+end
+% df0dx = 100*df0dx/io.V0;
 % Restrictions
 M_max = io.RHO*sum(io.Ve.*io.thickness)*(1+io.maximum_to_add);
 M_min = io.RHO*sum(io.Ve.*io.thickness)*(1-io.maximum_to_take);
 Mass = io.RHO*sum(io.Ve.*t); % Current mass
 h1 = 100*(Mass - M_max)/M_max;
 h2 = 100*(-Mass +M_min)/M_min;
-
-fval = [h1; h2];
-
-%% Sensitivities
-nel_dof = size(io.lm,2);
-dk = zeros(io.msh.nel, nel_dof, nel_dof);
-dm = dk;
-for i=1:io.msh.nel
-    ks = reshape(io.Ske(i,:), [nel_dof, nel_dof]);
-    kb = reshape(io.Bke(i,:), [nel_dof, nel_dof]);
-    me = reshape(io.Me(i,:), [nel_dof, nel_dof]);
-    dk(i,:,:) = io.YOUNG*(ks +3*t(i)*t(i)*kb);
-    dm(i,:,:) = io.RHO*me;
-end
-
-dc = io.alpha_*dm +io.beta_*dk;
-dkd = dk +1j*io.omega*dc -io.omega*io.omega*dm;
-
 % Restrictions
 dh1dt = 100*(io.RHO.*io.Ve')/M_max;
 dh2dt = 100*(-io.RHO.*io.Ve')/M_min;
 
-% Chain Rules
-f0val = V2_db;
-% Adjoint problem
-% lhs = -2*io.omega*io.omega*(u')*io.R0;
-lhs = -2*io.omega*io.omega*(u');
-ell = Kd\lhs.';
-df0dx = CalculateSensivities(ell,u,io.lm,dkd);
-tmp = 100/V0_db;
-tmp2 = 10/(log(10)*V2_rms);
-df0dx = tmp*tmp2*df0dx;
-
-% df0dx = 100*df0dx/io.V0;
-
+fval = [h1; h2];
 dfdx = [dh1dt; dh2dt];
 [df0dx, dfdx] = apply_sensi_filter(io.filter_options, t, df0dx, dfdx);
 % Scale back to 0-100 variable
