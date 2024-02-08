@@ -1,7 +1,30 @@
-function optimizeSquareShell(degree, nsub, freq, ...
-    initial_thickness, max_add, max_take, iter_max, filename)
+%% optimizeSquareShell
+% A function that optimizes the harmonic problem for a square shell using
+% Kirchhoff-Love shell elements from Isogeometric Analysis.
+% INPUTS
+% degree - degree of the NURBS basis functions
+% nsub - [nsub_x nsub_y] array of mesh subdivisions
+% freq - frequency of optimization. [f1 f2] for multiopt
+% Fmag - total norm of the Force Vector (magnitude)
+% force_type - can be 1, 2, 3, 4 or 5
+%            - 1- point force, centered
+%            - 2- distributed force over all plate
+%            - 3- point force, offcenter x=1/4 y=3/4
+%            - 4- distributed force, centered on a 0.2x0.2 area
+%            - 5- distributed force, off-centered on a 0.2x0.2 area x=1/4 y=3/4
+% fixed_sides - array with up to 4 numbers, for each boundary [1 2 3 4]
+% initial_thickness - initial mean thickness of the plate
+%  max_add - maximum percentage of inital mass to add. Positive value
+% max_take - maximum percentage of initial mass to take. Positive value
+%  iter_max - maximum number of iterations for the GCMMA algorithm
+%  filename - name of the files to save. Will save two files:
+%           - filename.txt (Paraview data)
+%           - filename.mat (optimization data)
+
+function optimizeSquareShell(degree, nsub, freq, Fmag, force_type, ...
+    fixed_sides, initial_thickness, max_add, max_take, iter_max, filename)
 %% Initialization
-problem_data = square_shell_problem;
+problem_data = square_shell_problem(force_type, fixed_sides);
 
 % Mesh parameters
 parameters.degree = degree;
@@ -16,7 +39,7 @@ parameters.YOUNG = 6.9e13;
 parameters.POISSON = 0.3;
 parameters.alpha_ = 1.2.*parameters.omega;
 parameters.beta_ = 0.1./parameters.omega;
-parameters.Fmag = 1e6; % Force magnitude
+parameters.Fmag = Fmag; % Force magnitude
 
 % Optimization parameters
 parameters.thickness = initial_thickness;
