@@ -37,12 +37,13 @@ velocity = -1j*io.omega(i)*u{i};
 V2_rms = real(velocity'*velocity);
 V0 = io.u_init{i,2};
 V2_scaled = 100*V2_rms/V0;
-V_db = 100 +10*log10(V2_rms);
-V0_db = 100+10*log10(V0);
-V2_db = 100*V_db/V0_db;
+% V_db = 100 +10*log10(V2_rms);
+% V0_db = 100+10*log10(V0);
+% V2_db = 100*V_db/V0_db;
 
 % Chain Rules
-f0val = f0val + V2_db/io.nfreq;
+f0val = f0val + V2_scaled/io.nfreq;
+% f0val = f0val + V2_db/io.nfreq;
 % Adjoint problem
 % lhs = -2*io.omega*io.omega*(u')*io.R0;
 lhs = -2*io.omega(i)*io.omega(i)*(u{i}');
@@ -50,9 +51,11 @@ ell = Kd\lhs.';
 dc = io.alpha_(i)*dm +io.beta_(i)*dk;
 dkd = dk +1j*io.omega(i)*dc -io.omega(i)*io.omega(i)*dm;
 dfdx = CalculateSensivities(ell,u{i},io.lm,dkd);
-tmp = 100/V0_db;
-tmp2 = 10/(log(10)*V2_rms);
-dfdx = tmp*tmp2*dfdx;
+% tmp = 100/V0_db;
+% tmp2 = 10/(log(10)*V2_rms);
+% dfdx = tmp*tmp2*dfdx;
+tmp = 100/V0;
+dfdx = tmp*dfdx;
 df0dx = df0dx +dfdx/3;
 end
 % df0dx = 100*df0dx/io.V0;

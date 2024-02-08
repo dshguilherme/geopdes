@@ -31,11 +31,13 @@ V2_rms = real(velocity'*velocity);
 % V2_rms = real(velocity'*io.R0*velocity);
 V0 = io.u_init{i,2};
 V2_scaled = 100*V2_rms/V0;
-V_db = 100 +10*log10(V2_rms);
-V0_db = 100+10*log10(V0);
-V2_db = 100*V_db/V0_db;
+% V_db = 100 +10*log10(V2_rms);
+% V0_db = 100+10*log10(V0);
+% V2_db = 100*V_db/V0_db;
 
-f0val = f0val+V2_db/io.nfreq;
+% Chain Rules
+f0val = f0val + V2_scaled/io.nfreq;
+% f0val = f0val + V2_db/io.nfreq;
 end
 
 % Restrictions
