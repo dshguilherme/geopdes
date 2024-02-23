@@ -34,6 +34,18 @@ switch force_type
         hz = @forceSquarePlatePartiallyDistributed;
     case 5
         hz = @forceSquarePlatePartiallyDistributedOffCenter;
+    case 6
+        hz = @forceSquarePlateLine;
+    case 7
+        hz = @forceSquarePlateSenoidalLine;
+    case 8
+        hz = @forceSquarePlateRandomDistributed;
+    case 9
+        hz = @forceSquarePlateAngledDistributed15;
+    case 10
+        hz = @forceSquarePlateAngledDistributed30;
+    case 11
+        hz = @forceSquarePlateAngledDistributed45;
 end
 
 problem_data.f       = @(x, y, z, ind) cat(1, ...

@@ -21,7 +21,7 @@
 %           - filename.txt (Paraview data)
 %           - filename.mat (optimization data)
 
-function optimizeSquareShell(degree, nsub, freq, Fmag, force_type, ...
+function optimizeSquareShell(degree, nsub, freq, Fmag, force_type, obj_function, ...
     fixed_sides, initial_thickness, max_add, max_take, iter_max, filename)
 %% Initialization
 problem_data = square_shell_problem(force_type, fixed_sides);
@@ -37,8 +37,8 @@ parameters.omega = parameters.freq*2*pi;
 parameters.RHO = 2700;
 parameters.YOUNG = 6.9e13;
 parameters.POISSON = 0.3;
-parameters.alpha_ = 1.2.*parameters.omega;
-parameters.beta_ = 0.1./parameters.omega;
+parameters.alpha_ = 0.12.*parameters.omega;
+parameters.beta_ = 0.01./parameters.omega;
 parameters.Fmag = Fmag; % Force magnitude
 
 % Optimization parameters
@@ -54,7 +54,9 @@ parameters.iter_max = iter_max;
 parameters.philter = "simple"; % 'none', 'simple' or 'density'
 parameters.modo = "Continuous"; % 'SIMP' or 'Continuous'
 parameters.neta = 0.9;
-parameters.objective_function = "v2_rms";
+parameters.objective_function = obj_function; % v2_rms or AIP
+
+parameters.initial_guess = 1; % 1 for initial guess with eigenvalue decompposion, 0 for constant initial guess
 
 %% Solve initial step
 io = firstStepParallelKLShell(parameters,problem_data);

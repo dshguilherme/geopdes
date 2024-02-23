@@ -84,9 +84,21 @@ filter_options.subshape = nsub;
 t = (tmax-tmin)*xval/100 +tmin;
 t = apply_x_filter(filter_options, t);
 [Ks, M] = shellMatricesFromElements(Bke, Ske, Me, lm, t, YOUNG, RHO);
-
+if initial_guess == 1
+    D = YOUNG*thickness^3/(1-POISSON*POISSON);
+    const = sqrt(D/RHO/thickness)*pi*pi;
+    n_eigs = ceil(sqrt(2*pi*freq*(1/const)));
+    n_eigs = 2*numel(ndgrid(0:n_eigs+1,0:n_eigs+1));
+    t = getInitialGuess(Ks,M,dr_dofs,n_eigs,freq,sp, geometry,nsub);
+    t = reshape(t,size(xval));
+    t = norm(xval)/norm(t)*t;
+    xval = t;
+    t = (tmax-tmin)*t/100 +tmin;
+    [Ks, M] = shellMatricesFromElements(Bke, Ske, Me, lm, t, YOUNG, RHO);
+end
 
 u_init = cell(nfreq,2);
+aW_init = cell(nfreq,1);
 for i=1:nfreq
 C = alpha_(i)*M +beta_(i)*Ks;
 Kd = Ks +1j*omega(i)*C -omega(i)*omega(i)*M;
@@ -96,7 +108,7 @@ u_init{i,1} = SolveDirichletSystem(Kd, F, dr_dofs, free_dofs, dr_values);
 % [vec, vals] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),2,'sm');
 % vals = diag(vals);
 %% Objective Functions
-
+aW_init{i} = real(0.5*omega(i)*omega(i)*(u_init{i,1}'*C*u_init{i,1}));
 velocity0 = -1j*omega(i)*u_init{i,1};
 % % gap0 = vals(1)-vals(2);
 % % eig0 = -vals(1);

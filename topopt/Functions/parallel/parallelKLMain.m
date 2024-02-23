@@ -9,10 +9,10 @@ problem_data = square_shell_problem;
 
 % Mesh parameters
 parameters.degree = 2;
-parameters.nsub = [134 134];
+parameters.nsub = [30 30];
 
 % Domain and Material properties
-parameters.freq = [1500 1700 1900];
+parameters.freq = [1500];
 parameters.nfreq = length(parameters.freq);
 parameters.omega = parameters.freq*2*pi;
 parameters.RHO = 2700;
@@ -20,7 +20,7 @@ parameters.YOUNG = 6.9e13;
 parameters.POISSON = 0.3;
 parameters.alpha_ = 1.2.*parameters.omega;
 parameters.beta_ = 0.1./parameters.omega;
-parameters.Fmag = 1e6; % Force magnitude
+parameters.Fmag = 1e3; % Force magnitude
 
 % Optimization parameters
 parameters.thickness = 0.002;
