@@ -1,4 +1,5 @@
 function parameters = generateParameters(mesh, material, optimization)
+
 % Mesh parameters
 parameters.degree = mesh.degree;
 parameters.nsub = mesh.nsub;
