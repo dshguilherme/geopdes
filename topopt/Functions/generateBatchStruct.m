@@ -17,6 +17,11 @@ for i=1:length(midx)
             p(i).('nfreq') = length(p(i).('freq'));
             p(i).('omega') = 2*pi*p(i).('freq');
         end
+        if strcmp(variable_fields{j},'proportional')
+            damping = p(i).('proportional'){1};
+            p(i).('alpha_') = damping(1)*p(i).('freq');
+            p(i).('beta_') = damping(2)/p(i).('freq');
+        end
     end
     tf = strcmp(problem_variables, problem_set);
     arg = {"square", [1], [1 2 3 4]};

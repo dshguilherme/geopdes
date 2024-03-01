@@ -2,18 +2,16 @@ function variable_fields = generateVariables(mesh_options, ...
     domain_options, optimization_options, problem_options)
 % Mesh
 mesh_fields = {'degree', 'nsub'}; % degree, nsub
-mesh_options = [];
 mesh_variables = mesh_fields(mesh_options);
 
 % Domain
-domain_fields = {'freq'}; %freq, rho, young, POISSON, alpha, beta
-domain_options = [1];
+domain_fields = {'freq', 'rho', 'young', 'POISSON', 'alpha', ...
+    'beta', 'proportional'}; %freq, rho, young, POISSON, alpha, beta, proportional
 domain_variables = domain_fields(domain_options);
 
 % Optimization
 optimization_fields = {'thickness', 'min_thickness', 'max_thickness', ...
     'max_add','max_take', 'obj_function', 'initial_guess'};
-optimization_options = [];
 optimization_variables = optimization_fields(optimization_options);
 
 % Problem batch variables
