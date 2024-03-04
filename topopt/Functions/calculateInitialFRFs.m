@@ -11,11 +11,11 @@ for i=1:11
 end
 
 % Matrices
-[K,M,C,dr_dofs, free_dofs, dr_values] = parseInitialMatrices(problem_data{1},mesh,material);
+[K,M,C,dr_dofs, free_dofs, dr_values] = parseInitialMatrices(problem_data{1},mesh,material, optimization);
 % Vectors
 F = cell(11,1);
 for i=1:11
-    F{i} = parseInitialForce(problem,mesh,material);
+    F{i} = parseInitialForce(problem_data{i},mesh,material);
 end
 
 % Boundary data
@@ -41,5 +41,5 @@ for i=1:11
     AIP{i} = tmp;
     v2{i} = tmp2;
 end
-save(filename+string('.mat'),'frequency_array','AIP','v2');      
+save(filename+string('.mat'),'frequency_array','AIP','v2','F');      
 end

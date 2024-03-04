@@ -1,4 +1,4 @@
-function [K,M,C, dr_dofs, free_dofs, dr_values] = parseInitialMatrices(problem, mesh, material)
+function [K,M,C, dr_dofs, free_dofs, dr_values] = parseInitialMatrices(problem, mesh, material, optimization)
 degree = mesh.degree;
 nsub = mesh.nsub;
 clear method_data
@@ -36,6 +36,7 @@ for iside = 1:numel(problem.drchlt_sides)
     dr_dofs = union (dr_dofs, sp.boundary(side).dofs(sp.boundary(side).comp_dofs{icomp}));
   end
 end
+dr_values = zeros(size(dr_dofs));
 
 free_dofs = setdiff(1:sp.ndof, dr_dofs);
 end

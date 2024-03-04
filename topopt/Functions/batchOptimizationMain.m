@@ -3,9 +3,10 @@ close all
 clc
 %% Processing options
 CALC_INITIAL_SPECTRA = true; % True or False
+initial_filename = 'espectros_iniciais_134x134';
 % mesh options
     initial_degree = 2;
-    initial_nsub = [60 60];
+    initial_nsub = [134 134];
 % Spectral options
     startFreq = 1;
     stopFreq = 1000;
@@ -32,8 +33,8 @@ mesh_variables = cell(2,2);
 
 % Domain
 domain_variables = cell(7,2);
-domain_variables{1,1} = [130 350 443 1310]; % optimization frequencies
-domain_variables{1,2} = string({'f0130', 'f0350', 'f0443', 'f1310'});
+domain_variables{1,1} = [130 350 443]; % optimization frequencies
+domain_variables{1,2} = string({'f0130', 'f0350', 'f0443'});
 domain_variables{5,1} = [1e-7, 1e-6, 1e-5]; % alpha
 domain_variables{5,2} = string({'a-7', 'a-6', 'a-5'});
 
@@ -76,9 +77,9 @@ if CALC_INITIAL_SPECTRA
         discretization, sAlpha, sBeta, initial_filename)
 end
 % Open file with the original spectra
-clearvars -except all_names problem_variables startFreq stopFreq discretization sAlpha sBeta
+clearvars -except all_names problem_variables startFreq stopFreq discretization sAlpha sBeta initial_filename
 initial_spectra = load(initial_filename+string('.mat'));
 calculateBatchSpectras(all_names, startFreq, stopFreq, discretization, ...
-    sAlpha, sBeta, initial_spectra.frequency_array, initial_spectra.AIP);
+    sAlpha, sBeta, initial_spectra.frequency_array, initial_spectra.AIP, initial_spectra.F);
 
 
