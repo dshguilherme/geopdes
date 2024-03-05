@@ -99,6 +99,10 @@ end
 
 u_init = cell(nfreq,2);
 aW_init = cell(nfreq,1);
+if length(alpha_) < nfreq
+    alpha_ = repmat(alpha_,nfreq,1);
+    beta_ = repmat(beta_,nfreq,1);
+end
 for i=1:nfreq
 C = alpha_(i)*M +beta_(i)*Ks;
 Kd = Ks +1j*omega(i)*C -omega(i)*omega(i)*M;

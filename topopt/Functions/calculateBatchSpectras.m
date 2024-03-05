@@ -14,7 +14,7 @@ frequencies = linspace(startFreq,stopFreq,(stopFreq-startFreq)/discretization +1
         clear file
         t = (io.tmax-io.tmin)*xval/100 +io.tmin;
         [K, M] = shellMatricesFromElements(io.Bke, io.Ske, io.Me, io.lm, t, io.YOUNG, io.RHO);
-        C = sAlpha*K +sBeta*M;
+        C = sAlpha*M +sBeta*K;
         FF = oF{io.force_type};
         dr_dofs = io.dr_dofs;
         free_dofs = io.free_dofs;
