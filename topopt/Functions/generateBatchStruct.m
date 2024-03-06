@@ -10,7 +10,7 @@ for i=1:length(midx)
     p(i) = generateParameters(mesh, material, optimization);
 end
 for i=1:length(midx)
-    idx = iM(i,:);
+    idx = iM(midx(i),:);
     for j=1:length(idx)
         p(i).(variable_fields{j}) = variables{j}(idx(j));
         if strcmp(variable_fields{j},'freq')
