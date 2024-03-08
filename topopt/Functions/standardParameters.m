@@ -1,6 +1,6 @@
 function [mesh, material, optimization] = standardParameters
-mesh.degree = 2;
-mesh.nsub = [134 134];
+mesh.degree = 5;
+mesh.nsub = [66 66];
 
 % Domain and Material properties
 material.freq = 350;

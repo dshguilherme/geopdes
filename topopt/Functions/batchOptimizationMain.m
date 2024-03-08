@@ -2,11 +2,11 @@ clearvars
 close all
 clc
 %% Processing options
-CALC_INITIAL_SPECTRA = false; % True or False
-initial_filename = 'espectros_iniciais_134x134';
+CALC_INITIAL_SPECTRA = true; % True or False
+initial_filename = 'espectros_iniciais_n3p5';
 % mesh options
-    initial_degree = 2;
-    initial_nsub = [134 134];
+    initial_degree = 5;
+    initial_nsub = [66 66];
 % Spectral options
     startFreq = 1;
     stopFreq = 1000;
@@ -16,7 +16,7 @@ initial_filename = 'espectros_iniciais_134x134';
 
 
 %%  Mesh, material, optimization and problem batch variables
-mesh_options = [1 2]; % 1 - degree, 2 - nsub
+mesh_options = []; % 1 - degree, 2 - nsub
 domain_options = [1]; % 1 - freq, 2 - rho, 3 - young, 4 - POISSON, 
                       %5 - alpha, 6 - beta, 7 - proportional
 optimization_options = []; % 1 - thickness, 2 - min_thickness, 3 - max_thickness
@@ -30,10 +30,10 @@ variable_fields = generateVariables(mesh_options, domain_options, ...
 %% String names and variable definition
 % Mesh
 mesh_variables = cell(2,2);
-mesh_variables{1,1} = [2 3 4];
-mesh_variables{1,2} = string({'p2','p3','p4'});
-mesh_variables{2,1} = [60 80 100];
-mesh_variables{2,2} = string({'60x60','80x80','100x100'});
+% mesh_variables{1,1} = [2 3 4 5];
+% mesh_variables{1,2} = string({'p2','p3','p4','p5'});
+% mesh_variables{2,1} = [9 24 30 66];
+% mesh_variables{2,2} = string({'9x9','24x24','30x30','66x66'});
 
 % Domain
 domain_variables = cell(7,2);
@@ -62,7 +62,7 @@ variable_names = variable_names(~cellfun('isempty',variable_names(:)));
 
 
 %% Generate filenames
-prefix = string('L1_t0010_');
+prefix = string('L1_t0010_n3p5_');
 [all_names, indexMatrix] = generateNameList(prefix, variable_names);
 [missing_names, midx] = missingFileNames({'L1'}, all_names);
 
@@ -77,8 +77,8 @@ parfor i=1:length(midx)
 end
 timerVal = toc;
 hours = fix(timerVal/3600);
-minutes = fix(timerVal,60) -hours*60;
-seconds = rem(timerVal,60);
+minutes = fix(timerVal/60) -hours*60;
+seconds = round(rem(timerVal,60));
 fprintf('Optimization of %i cases finished in %i hours, %i minutes and %i seconds \n',length(missing_names),hours,minutes,seconds);
 %% Save plots of solutions and spectra
 if CALC_INITIAL_SPECTRA
@@ -96,8 +96,8 @@ calculateBatchSpectras(all_names, startFreq, stopFreq, discretization, ...
     sAlpha, sBeta, initial_spectra.frequency_array, initial_spectra.AIP, initial_spectra.F);
 timerVal = toc;
 hours = fix(timerVal/3600);
-minutes = fix(timerVal,60) -hours*60;
-seconds = rem(timerVal,60);
+minutes = fix(timerVal/60) -hours*60;
+seconds = round(rem(timerVal,60));
 if hours > 0
     fprintf('Finished calculating %i spectras in %i hours, %i minutes and %i seconds  \n',length(all_names),hours,minutes,seconds);
 else
