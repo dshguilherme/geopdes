@@ -5,8 +5,8 @@ mesh_fields = {'degree', 'nsub'}; % degree, nsub
 mesh_variables = mesh_fields(mesh_options);
 
 % Domain
-domain_fields = {'freq', 'rho', 'young', 'POISSON', 'alpha', ...
-    'beta', 'proportional'}; %freq, rho, young, POISSON, alpha, beta, proportional
+domain_fields = {'freq', 'rho', 'young', 'POISSON', 'alpha_', ...
+    'beta_', 'proportional'}; %freq, rho, young, POISSON, alpha, beta, proportional
 domain_variables = domain_fields(domain_options);
 
 % Optimization

@@ -40,8 +40,8 @@ mesh_variables = cell(2,2);
 domain_variables = cell(7,2);
 domain_variables{1,1} = [130 350 443]; % optimization frequencies
 domain_variables{1,2} = string({'f0130', 'f0350', 'f0443'});
-domain_variables{5,1} = [1e-4 1e-3 1e-2 1e-1 0]; % alpha
-domain_variables{5,2} = string({'a-4', 'a-3', 'a-2', 'a-1', 'a0'});
+domain_variables{5,1} = [0 1e-4 1e-3 1e-2 1e-1]; % alpha
+domain_variables{5,2} = string({'a0', 'a-4', 'a-3', 'a-2', 'a-1'});
 domain_variables{6,1} = [1e-4 1e-5 1e-6 1e-7 0]; % beta
 domain_variables{6,2} = string({'b-4', 'b-5', 'b-6', 'b-7', 'b0'}); 
 
@@ -73,6 +73,7 @@ prefix = string('L1_t0010_');
 p = generateBatchStruct(midx, indexMatrix, variable_fields, variables);
 
 tic
+fprintf('Initiating parallel optimization of %i cases \n', length(missing_names));
 % Batch processes
 parfor i=1:length(missing_names)
     filename = missing_names(i);
