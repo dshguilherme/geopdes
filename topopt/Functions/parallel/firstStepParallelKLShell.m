@@ -23,7 +23,9 @@ end
 Me = op_u_v_elements(sp1, sp1, msh1, RHO);
 % Location matrix (connectivity)
 lm = sp1.connectivity';
-
+% Damping
+alpha_ = alpha;
+beta_ = beta;
 % Restriction
 Ve = (msh1.element_size.^2)'; % Element area
 
