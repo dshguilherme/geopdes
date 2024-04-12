@@ -1,7 +1,7 @@
 function problem_data = hemispherical_shell_problem(R,theta)
 clear problem_data
 crv = nrbcirc(R,[0 0 0],0,pi/2 -deg2rad(theta));
-srf = nrbrevolve(crv,[0 0 0],[0 -1 0],pi/2);
+srf = nrbrevolve(crv,[0 0 0],[0 -1 0],pi);
 srf = nrbtform(srf, vecrotz(pi/2));
 srf = nrbtform(srf, vecrotx(pi/2));
 srf = nrbtform(srf, vecroty(pi/2));

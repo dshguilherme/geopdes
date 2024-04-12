@@ -104,7 +104,8 @@ RX = vecrotx(angy);
 curve = nrbtform(curve,RX*RY*T);
 
 % Construct an arc 
-arc = nrbcirc(1.0,[],0.0,theta);
+% arc = nrbcirc(1.0,[],0.0,theta);
+arc = circ_interpolation(44);
 
 if (iscell (curve.knots))
 % Construct the revolved volume
