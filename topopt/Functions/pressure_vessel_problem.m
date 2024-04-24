@@ -15,6 +15,8 @@ domain.knots = domain.knots/max(domain.knots);
 domain_interp = domain_interpolation(44,domain);
 
 srf = nrbrevolve(domain_interp,[0 0 0], [1 0 0], 2*pi);
+srf2 = nrbtform(srf, vecroty(pi));
+
 
 problem_data.geo_name = srf;
 problem_data.drchlt_sides = [1 2];

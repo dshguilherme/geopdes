@@ -126,8 +126,9 @@ kkttol  = 0;
 t = (tmax-tmin)*xval/100 +tmin;
 [Ks, M] = shellMatricesFromElements(Bke, Ske, Me, lm, t, YOUNG, RHO);
 Ks(strip_dofs, strip_dofs) = Ks(strip_dofs,strip_dofs) + bK(b_dofs,b_dofs);
-% Modes
-[V, W] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),100,'smallestabs');
+C = alpha_*M +beta_*Ks;
+Kd = Ks +1j*omega*C -omega*omega*M;
+
 
 u = zeros(length(Ks),1);
 u(free_dofs) = V(:,1);

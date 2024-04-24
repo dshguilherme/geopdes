@@ -1,4 +1,4 @@
-function [K, dofs] = bending_strip_stiffness(strip)
+function [K, space] = bending_strip_stiffness(strip)
 % Construct the msh structure
 rule = msh_gauss_nodes([3 3]);
 zeta = {unique(strip.knots{1}), unique(strip.knots{2})};
@@ -11,6 +11,4 @@ space = sp_vector(scalar_spaces, msh);
 clear space_scalar scalar_spaces;
 
 K = op_bending_strip_tp(space, space, msh, @(x,y,z) 1e10*ones(size(x)), @(x,y,z) zeros(size(x)), 1);
-dofs = space.boundary(1).dofs;
-dofs = [dofs' dofs'+1 dofs'+2];
 end
