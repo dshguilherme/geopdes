@@ -1,7 +1,10 @@
 function [f0val, df0dx, fval, dfdx] = vesselEvalShellObjectivesAndSensitivities(io, xval)
 t = (io.tmax-io.tmin)*xval/100 +io.tmin;
 [Ks, M] = shellMatricesFromElements(io.Bke, io.Ske, io.Me, io.lm, t, io.YOUNG, io.RHO);
-Ks(io.strip_dofs, io.strip_dofs) = Ks(io.strip_dofs,io.strip_dofs) +io.bK(io.b_dofs,io.b_dofs);
+for i=1:length(io.strip_dofs)
+    sd = io.strip_dofs{i}(:);
+    Ks(sd,sd) = Ks(sd,sd)+io.bK{i};
+end
 
 C = io.alpha_*M +io.beta_*Ks;
 Kd = Ks +1j*io.omega*C -io.omega*io.omega*M;

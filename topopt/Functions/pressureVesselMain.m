@@ -23,8 +23,8 @@ parameters.freq = [100];
 parameters.RHO = 7850; % kg/m3
 parameters.YOUNG = 180e6; % Pa
 parameters.POISSON = 0.33;
-parameters.alpha_ = 1e-5; % Rayleigh damping parameters. Mass proportional
-parameters.beta_ = 1e-7; % Rayleigh damping parameters. Stiffness proportional
+parameters.alpha_ = 1.2*2*pi*parameters.freq; % Rayleigh damping parameters. Mass proportional
+parameters.beta_ = 0.1/(2*pi*parameters.freq); % Rayleigh damping parameters. Stiffness proportional
 parameters.pressure = 1000; % 1kPa of oscilation
 % Optimization
 parameters.thickness = 3e-3; % mean thickness of the vessel
@@ -47,9 +47,9 @@ io = firstStepPressureVessel(parameters, problem_data);
 [xval, fobj, fres, x_history] = fastGCMMA_noplots(io);
 
 %% Save paraview and Results
-grafo = nrbplot(io.geometry.nurbs, [sqrt(length(xval)), sqrt(length(xval))]);
-grafo.CData = reshape(xval,sqrt(length(xval)),sqrt(length(xval)));
-colorbar
-colormap(jet)
+% grafo = nrbplot(io.geometry.nurbs, [sqrt(length(xval)), sqrt(length(xval))]);
+% grafo.CData = reshape(xval,sqrt(length(xval)),sqrt(length(xval)));
+% colorbar
+% colormap(jet)
 
 %% Calc Spectra
