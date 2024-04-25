@@ -71,8 +71,9 @@ function [xval, fobj, fres, x_history] = fastGCMMA_noplots(io)
     xval = xmma;
     
     % Filter new value
-    xPhys = apply_x_filter(io.filter_options, xmma);
-    xPhys = io.dfactor*xPhys +io.tmin;
+%     xPhys = apply_x_filter(io.filter_options, xmma);
+%     xPhys = io.dfactor*xPhys +io.tmin;
+    xPhys = io.dfactor*xval +io.tmin;
     % Calculate function and restrictions
     [f0val, df0dx, fval, dfdx] = eval_objective_and_constraints(io, xval);
     
@@ -82,9 +83,9 @@ function [xval, fobj, fres, x_history] = fastGCMMA_noplots(io)
                xmin,xmax,df0dx,fval,dfdx,io.a0,io.a,io.c,io.d);
            
     % Output Stuff
-        x_history(:,outit) = xval; x_plot = reshape(xPhys,io.nsub); fobj(outit) = f0val; fres(outit,:) = fval; 
+        x_history(:,outit) = xval;  fobj(outit) = f0val; fres(outit,:) = fval; 
         fprintf(' Iteration: %3i | Objective: %3.1f | Mass: %4.1f kg | Restrictions: %3.1f | %3.1f | Change: %1.2e\n', ...
-      outit, f0val, io.RHO*sum(io.Ve.*xPhys), fval(1), fval(2), change);
+      outit, f0val, io.RHO*sum(io.Ve'.*xPhys), fval(1), fval(2), change);
 %     grafo = nrbplot(io.geometry.nurbs,io.nsub); view(0,90); colormap(jet); grafo.CData = x_plot; colorbar; caxis([io.tmin io.tmax]); drawnow; %imagesc(rot90(x_plot)); colorbar; caxis([0 100]); axis equal;axis off;drawnow;
     end
     fobj = fobj(1:outit); fres = fres(1:outit,:); x_history = x_history(:,1:outit);
