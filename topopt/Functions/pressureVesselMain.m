@@ -6,7 +6,7 @@ CALC_INITIAL_SPECTRA = true;
 initial_filename = 'espectros_iniciais_vessel';
 % mesh options
     initial_degree = 2;
-    initial_nsub = [1 1];
+    initial_nsub = [1 3];
 % Spectral options
     startFreq = 1;
     stopFreq = 1000;
@@ -17,7 +17,7 @@ initial_filename = 'espectros_iniciais_vessel';
 %% Mesh, domain and optimization options
 % Mesh
 parameters.degree = 2;
-parameters.nsub = [2 2];
+parameters.nsub = [1 3];
 % Domain
 parameters.freq = [100];
 parameters.RHO = 7850; % kg/m3

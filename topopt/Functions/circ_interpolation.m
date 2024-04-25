@@ -1,6 +1,6 @@
 function circ = circ_interpolation(p)
 assert(p>1 && p<=5,'p must be between 2 and 5');
-lookup = [20, 15, 10, 9]; % 1e-4 error
+lookup = [200, 150, 100, 90]; % 1e-4 error
 n = lookup(p-1) +1;
 
 T = linspace(0,1,n+1);
