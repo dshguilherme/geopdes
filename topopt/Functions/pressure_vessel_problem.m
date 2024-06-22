@@ -12,7 +12,7 @@ glue = nrbglue(e1,line);
 
 domain = nrbglue(glue,e2);
 domain.knots = domain.knots/max(domain.knots);
-domain_interp = domain_interpolation(44,domain);
+domain_interp = domain_interpolation(47,domain);
 
 srf = nrbrevolve(domain_interp,[0 0 0], [1 0 0], 2*pi);
 srf2 = nrbtform(srf, vecroty(pi));

@@ -14,8 +14,10 @@ v2(i) = v2_init;
 end
 
 [V, W] = eigs(Ks(free_dofs,free_dofs),M(free_dofs,free_dofs),100,'smallestabs');
-u_init = zeros(length(Kd),1);
+u_init = zeros(length(Ks),1);
 u_init(free_dofs) = V(:,1);
+d = geo_deform(u_init,sp,geometry);
+nrbkntplot(d.nurbs);
 u_init(ms(:,2)) = u_init(ms(:,1));
 u1 = u_init(1:4512);
 u2 = u_init(4513:4513+4512);

@@ -31,7 +31,7 @@ problem_data.h = @(x, y, ind) zeros (2, size (x, 1), size (x, 2));
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
 method_data.degree     = [degree degree];     % Degree of the bsplines
-method_data.regularity = [degree-1 degree-1];     % Regularity of the splines
+method_data.regularity = [degree-3 degree-3];     % Regularity of the splines
 method_data.nsub       = nsub;     % Number of subdivisions
 method_data.nquad      = [degree+1 degree+1];     % Points for the Gaussian quadrature rule
 

@@ -16,23 +16,23 @@ initial_filename = 'espectros_iniciais_vessel';
 
 %% Mesh, domain and optimization options
 % Mesh
-parameters.degree = 2;
-parameters.nsub = [1 3];
+parameters.degree = 4;
+parameters.nsub = [13 2];
 % Domain
 parameters.freq = [100];
-parameters.RHO = 7850; % kg/m3
-parameters.YOUNG = 180e6; % Pa
-parameters.POISSON = 0.33;
+parameters.RHO = 2700; % kg/m3
+parameters.YOUNG = 6.9e13; % Pa
+parameters.POISSON = 0.3;
 parameters.alpha_ = 1.2*2*pi*parameters.freq; % Rayleigh damping parameters. Mass proportional
 parameters.beta_ = 0.1/(2*pi*parameters.freq); % Rayleigh damping parameters. Stiffness proportional
 parameters.pressure = 1000; % 1kPa of oscilation
 % Optimization
-parameters.thickness = 3e-3; % mean thickness of the vessel
-parameters.min_thickness = 1e-3; % minimum thickness
-parameters.max_thickness = 10e-3; % maximum thickness
+parameters.thickness = 1e-3; % mean thickness of the vessel
+parameters.min_thickness = 0.5e-3; % minimum thickness
+parameters.max_thickness = 2e-3; % maximum thickness
 parameters.max_add = 10; % Max added mass = max_add*initial_mass
 parameters.max_take = 1/3; % Minimum mass = max_take*initial_mass
-parameters.objective_function = 'v2_rms';
+parameters.objective_function = 'AIP';
 parameters.initial_guess = false;
 parameters.iter_max = 1000;
 parameters.change_min = 1e-3;
